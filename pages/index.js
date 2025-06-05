@@ -254,7 +254,7 @@ export default function Home() {
       console.error('Error switching to Seismic:', error);
       
       if (!isAutomatic) {
-        alert(`Failed to switch to Seismic network: ${error.message}\n\nPlease try manually adding Seismic network to your wallet:\n\nNetwork Name: ${SEISMIC_NETWORK.name}\nChain ID: ${SEISMIC_NETWORK.id}\nRPC URL: ${SEISMIC_NETWORK.rpcUrls.default.http[0]}\nCurrency Symbol: ${SEISMIC_NETWORK.nativeCurrency.symbol}\nBlock Explorer: ${SEISMIC_NETWORK.blockExplorers.default.url}`);
+        console.error(`Failed to switch to Seismic network: ${error.message}\n\nPlease try manually adding Seismic network to your wallet:\n\nNetwork Name: ${SEISMIC_NETWORK.name}\nChain ID: ${SEISMIC_NETWORK.id}\nRPC URL: ${SEISMIC_NETWORK.rpcUrls.default.http[0]}\nCurrency Symbol: ${SEISMIC_NETWORK.nativeCurrency.symbol}\nBlock Explorer: ${SEISMIC_NETWORK.blockExplorers.default.url}`);
       }
     } finally {
       setLoading(false);
@@ -321,36 +321,27 @@ export default function Home() {
 
   const handleSendTransaction = async () => {
     if (!provider || !recipientAddress || !amount) {
-      alert('Please fill in all fields and connect wallet');
+      console.warn('Please fill in all fields and connect wallet');
       return;
     }
 
     // Проверяем что пользователь на правильной сети
     if (!isCorrectNetwork) {
-      alert('Please switch to Seismic network before sending transactions!');
+      console.warn('Please switch to Seismic network before sending transactions!');
       return;
     }
 
     // Проверяем что не отправляем самому себе
     if (recipientAddress.toLowerCase() === user?.wallet?.address?.toLowerCase()) {
-      const shouldUseTestAddress = window.confirm(
-        `You're trying to send tokens to your own address.\n\n` +
-        `This is allowed but not very useful for testing.\n\n` +
-        `Click OK to use a test address, or Cancel to continue with your address.`
-      );
-      
-      if (shouldUseTestAddress) {
-        // Предлагаем тестовый адрес
-        const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
-        setRecipientAddress(testAddress);
-        alert(`Test address set: ${testAddress}\n\nYou can now send a small amount like 0.001 SETH for testing.`);
-        return;
-      }
+      const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
+      setRecipientAddress(testAddress);
+      console.log(`Test address set: ${testAddress}\n\nYou can now send a small amount like 0.001 SETH for testing.`);
+      return;
     }
 
     // Проверяем валидность адреса
     if (!/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)) {
-      alert('Please enter a valid Ethereum address (starts with 0x and is 42 characters long)');
+      console.error('Please enter a valid Ethereum address (starts with 0x and is 42 characters long)');
       return;
     }
 
@@ -359,20 +350,12 @@ export default function Home() {
     const sendAmount = parseFloat(amount);
     
     if (currentBalance === 0) {
-      const shouldGetFaucet = window.confirm(
-        `Your balance is 0 SETH. You need test tokens to send transactions.\n\n` +
-        `Click OK to open the Seismic faucet and get free test tokens.\n` +
-        `After getting tokens, return here to try again.`
-      );
-      
-      if (shouldGetFaucet) {
-        window.open(SEISMIC_LINKS.faucet, '_blank');
-      }
+      console.log('Balance is 0 SETH. Opening faucet to get test tokens...');
       return;
     }
     
     if (sendAmount > currentBalance) {
-      alert(
+      console.error(
         `Insufficient balance!\n\n` +
         `You're trying to send: ${sendAmount} SETH\n` +
         `Your current balance: ${currentBalance} SETH\n\n` +
@@ -384,7 +367,7 @@ export default function Home() {
     // Проверяем что остается достаточно на газ (примерно 0.001 SETH)
     const estimatedGas = 0.001;
     if (sendAmount + estimatedGas > currentBalance) {
-      alert(
+      console.error(
         `Please leave some SETH for gas fees!\n\n` +
         `Recommended max amount: ${(currentBalance - estimatedGas).toFixed(6)} SETH\n` +
         `(${estimatedGas} SETH reserved for gas)`
@@ -410,15 +393,7 @@ export default function Home() {
         console.error('Gas estimation failed:', gasError);
         
         if (gasError.message.includes('insufficient funds')) {
-          const shouldGetFaucet = window.confirm(
-            `Insufficient funds for transaction!\n\n` +
-            `This error usually means you need more SETH tokens.\n` +
-            `Click OK to open the faucet and get free test tokens.`
-          );
-          
-          if (shouldGetFaucet) {
-            window.open(SEISMIC_LINKS.faucet, '_blank');
-          }
+          console.log('Insufficient funds for transaction! Opening faucet...');
           return;
         }
         
@@ -439,7 +414,7 @@ export default function Home() {
       
       setTransactions(prev => [newTx, ...prev]);
       
-      alert(`Transaction sent successfully on Seismic!\nHash: ${txResponse.hash}`);
+      console.log(`Transaction sent successfully on Seismic!\nHash: ${txResponse.hash}`);
       
       // Очистить форму
       setRecipientAddress('');
@@ -463,7 +438,7 @@ export default function Home() {
         errorMessage += error.message;
       }
       
-      alert(errorMessage);
+      console.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -471,7 +446,7 @@ export default function Home() {
 
   const handleEncryptData = async () => {
     if (!selectedEncryptedType || !contractAddress) {
-      alert('Please select encrypted type and enter contract address');
+      console.warn('Please select encrypted type and enter contract address');
       return;
     }
 
@@ -488,11 +463,11 @@ export default function Home() {
       };
       
       setEncryptedResult(mockEncryptedData);
-      alert(`Data encrypted successfully using ${selectedEncryptedType} on Seismic!`);
+      console.log(`Data encrypted successfully using ${selectedEncryptedType} on Seismic!`);
       
     } catch (error) {
       console.error('Encryption error:', error);
-      alert('Encryption failed: ' + error.message);
+      console.error('Encryption failed: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -500,13 +475,13 @@ export default function Home() {
 
   const handleSendEncryptedTransaction = async () => {
     if (!provider || !contractAddress || !selectedEncryptedType) {
-      alert('Please complete encryption first and connect wallet');
+      console.warn('Please complete encryption first and connect wallet');
       return;
     }
 
     // Проверяем что пользователь на правильной сети
     if (!isCorrectNetwork) {
-      alert('Please switch to Seismic network before sending encrypted transactions!');
+      console.warn('Please switch to Seismic network before sending encrypted transactions!');
       return;
     }
 
@@ -537,7 +512,7 @@ export default function Home() {
       
       setTransactions(prev => [newTx, ...prev]);
       
-      alert(`Encrypted transaction sent successfully on Seismic!\nHash: ${txResponse.hash}\nType: ${selectedEncryptedType}`);
+      console.log(`Encrypted transaction sent successfully on Seismic!\nHash: ${txResponse.hash}\nType: ${selectedEncryptedType}`);
       
       // Очистить форму
       setSelectedEncryptedType('');
@@ -546,7 +521,7 @@ export default function Home() {
       
     } catch (error) {
       console.error('Encrypted transaction error:', error);
-      alert('Encrypted transaction failed: ' + error.message);
+      console.error('Encrypted transaction failed: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -604,7 +579,7 @@ export default function Home() {
                   <button 
                     className="btn btn-info btn-sm" 
                     onClick={() => {
-                      alert(`Manual Network Setup Instructions:
+                      console.log(`Manual Network Setup Instructions:
                       
 1. Open your wallet (MetaMask, etc.)
 2. Go to Settings > Networks > Add Network
