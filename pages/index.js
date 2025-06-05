@@ -60,11 +60,29 @@ export default function Home() {
     try {
       const network = await ethereumProvider.request({ method: 'eth_chainId' });
       const chainId = parseInt(network, 16);
-      setCurrentNetwork({ chainId, name: chainId === SEISMIC_NETWORK.id ? SEISMIC_NETWORK.name : 'Unknown Network' });
+      
+      let networkName = 'Unknown Network';
+      if (chainId === SEISMIC_NETWORK.id) {
+        networkName = SEISMIC_NETWORK.name;
+      } else if (chainId === 1) {
+        networkName = 'Ethereum Mainnet';
+      } else if (chainId === 5) {
+        networkName = 'Goerli Testnet';
+      } else if (chainId === 11155111) {
+        networkName = 'Sepolia Testnet';
+      } else {
+        networkName = `Unknown Network (${chainId})`;
+      }
+      
+      setCurrentNetwork({ chainId, name: networkName });
       setIsCorrectNetwork(chainId === SEISMIC_NETWORK.id);
+      
+      console.log(`Current network: ${networkName} (Chain ID: ${chainId})`);
       return chainId === SEISMIC_NETWORK.id;
     } catch (error) {
       console.error('Error checking network:', error);
+      setCurrentNetwork({ chainId: null, name: 'Unknown Network' });
+      setIsCorrectNetwork(false);
       return false;
     }
   };
@@ -77,36 +95,44 @@ export default function Home() {
       setLoading(true);
       const ethereumProvider = await wallets[0].getEthereumProvider();
       
-      // Сначала пробуем переключиться на сеть
+      const chainIdHex = `0x${SEISMIC_NETWORK.id.toString(16)}`;
+      
+      // Сначала пробуем добавить сеть (если её нет)
+      try {
+        await ethereumProvider.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId: chainIdHex,
+            chainName: SEISMIC_NETWORK.name,
+            nativeCurrency: SEISMIC_NETWORK.nativeCurrency,
+            rpcUrls: [SEISMIC_NETWORK.rpcUrls.default.http[0]],
+            blockExplorerUrls: [SEISMIC_NETWORK.blockExplorers.default.url],
+          }],
+        });
+      } catch (addError) {
+        // Если сеть уже добавлена, это нормально
+        console.log('Network might already be added:', addError.message);
+      }
+      
+      // Теперь переключаемся на сеть
       try {
         await ethereumProvider.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: `0x${SEISMIC_NETWORK.id.toString(16)}` }],
+          params: [{ chainId: chainIdHex }],
         });
       } catch (switchError) {
-        // Если сеть не добавлена, добавляем её
-        if (switchError.code === 4902) {
-          await ethereumProvider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: `0x${SEISMIC_NETWORK.id.toString(16)}`,
-              chainName: SEISMIC_NETWORK.name,
-              nativeCurrency: SEISMIC_NETWORK.nativeCurrency,
-              rpcUrls: [SEISMIC_NETWORK.rpcUrls.default.http[0]],
-              blockExplorerUrls: [SEISMIC_NETWORK.blockExplorers.default.url],
-            }],
-          });
-        } else {
-          throw switchError;
-        }
+        console.error('Error switching to network:', switchError);
+        throw new Error(`Failed to switch to Seismic network: ${switchError.message}`);
       }
       
-      // Проверяем что сеть изменилась
-      await checkNetwork(ethereumProvider);
+      // Ждем немного и проверяем что сеть изменилась
+      setTimeout(async () => {
+        await checkNetwork(ethereumProvider);
+      }, 1000);
       
     } catch (error) {
       console.error('Error switching to Seismic:', error);
-      alert('Failed to switch to Seismic network: ' + error.message);
+      alert(`Failed to switch to Seismic network: ${error.message}\n\nPlease try manually adding Seismic network to your wallet:\nChain ID: 5124\nRPC URL: https://node-2.seismicdev.net/rpc`);
     } finally {
       setLoading(false);
     }
@@ -339,13 +365,35 @@ export default function Home() {
                 {isCorrectNetwork ? ' ✅' : ' ❌'}
               </span>
               {!isCorrectNetwork && currentNetwork && (
-                <button 
-                  className="btn btn-warning btn-sm" 
-                  onClick={switchToSeismic}
-                  disabled={loading}
-                >
-                  {loading ? 'Switching...' : 'Switch to Seismic'}
-                </button>
+                <div className="network-buttons">
+                  <button 
+                    className="btn btn-warning btn-sm" 
+                    onClick={switchToSeismic}
+                    disabled={loading}
+                  >
+                    {loading ? 'Switching...' : 'Switch to Seismic'}
+                  </button>
+                  <button 
+                    className="btn btn-info btn-sm" 
+                    onClick={() => {
+                      alert(`Manual Network Setup Instructions:
+                      
+1. Open your wallet (MetaMask, etc.)
+2. Go to Settings > Networks > Add Network
+3. Enter the following details:
+
+Network Name: Seismic Devnet
+Chain ID: 5124
+RPC URL: https://node-2.seismicdev.net/rpc
+Currency Symbol: SETH
+Block Explorer: https://explorer-2.seismicdev.net/
+
+4. Save and switch to this network`);
+                    }}
+                  >
+                    Manual Setup
+                  </button>
+                </div>
               )}
             </div>
             <span className={`connection-status ${authenticated ? 'connected' : 'disconnected'}`}>

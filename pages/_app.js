@@ -43,10 +43,11 @@ const privyConfig = {
   supportedChains: [seismicNetwork],
   externalWallets: {
     metamask: true,
-    coinbaseWallet: true,
+    coinbaseWallet: false,
     walletConnect: true,
     rainbow: true,
   },
+  chains: [seismicNetwork],
 };
 
 function MyApp({ Component, pageProps }) {
