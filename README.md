@@ -1,178 +1,186 @@
-# 🌊 Seismic Game - Блокчейн Приложение ✅ РАБОЧАЯ ВЕРСИЯ
+# 🌊 Seismic Game - Wallet Connection
 
-> Современное блокчейн-приложение с интеграцией **Seismic Devnet** и демо-режимом
+Современное Web3 приложение для подключения кошелька через **Privy React SDK** и взаимодействия с **Seismic Blockchain**.
 
-[![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://vercel.com)
-[![React](https://img.shields.io/badge/React-18.2.0-blue)](https://reactjs.org/)
-[![Status](https://img.shields.io/badge/Status-Working%20Demo-green)](https://github.com/alexanderblv/SG)
-[![Ethers](https://img.shields.io/badge/Ethers.js-6.7.1-orange)](https://ethers.org/)
+![Seismic Game](https://img.shields.io/badge/Blockchain-Seismic-blue)
+![React](https://img.shields.io/badge/React-18.2.0-61DAFB)
+![Privy](https://img.shields.io/badge/Privy-1.82.4-6A6FF5)
+![Next.js](https://img.shields.io/badge/Next.js-14.0.0-000000)
 
-## ✅ СТАТУС ПРОЕКТА
+## ✨ Особенности
 
-**🎉 ПРОБЛЕМЫ ИСПРАВЛЕНЫ! Приложение полностью рабочее!**
-
-### Что было исправлено:
-- ✅ **CDN ошибки** - исправлены ссылки на ethers.js и другие библиотеки
-- ✅ **MetaMask конфликты** - убраны проблемные провайдеры
-- ✅ **Babel и React ошибки** - оптимизирован код
-- ✅ **Privy SDK** - временно заменен на демо-режим
-- ✅ **Фиолетовый экран** - больше НЕ появляется!
-
-## 📋 Описание
-
-**Seismic Game** - это веб-приложение нового поколения, объединяющее современные технологии Web3 с удобным пользовательским интерфейсом. Приложение поддерживает:
-
-- 🔐 **Демо-режим аутентификации** - простой вход без кошельков
-- 🌐 **Интеграцию с Seismic Devnet** - кастомной EVM сетью
-- 🔒 **Симуляцию зашифрованных транзакций** - демо функциональность
-- 📱 **Адаптивный дизайн** - работает на всех устройствах
-- ⚡ **Мгновенная загрузка** - без ошибок CDN
+- 🔗 **Простое подключение кошелька** через Privy React SDK
+- 🌐 **Поддержка Seismic Network** (Chain ID: 5124)
+- 💼 **Множественные кошельки**: MetaMask, Coinbase Wallet, WalletConnect, Rainbow
+- 📧 **Email-based wallets** - встроенные кошельки Privy
+- 💸 **Отправка транзакций** с отслеживанием статуса
+- 🔐 **Seismic Encryption** (опционально)
+- 📱 **Адаптивный дизайн** для всех устройств
+- ⚡ **Развертывание на Vercel** в один клик
 
 ## 🚀 Быстрый старт
 
-### Просто откройте файл!
-1. **Скачайте проект**:
-   ```bash
-   git clone https://github.com/alexanderblv/SG.git
-   cd SG
-   ```
+### Развертывание на Vercel
 
-2. **Откройте index.html** в любом браузере - всё работает!
+1. **Fork этого репозитория**
+2. **Подключите к Vercel:**
+   - Перейдите на [vercel.com](https://vercel.com)
+   - Нажмите "New Project"
+   - Импортируйте ваш GitHub репозиторий
+   - Добавьте переменную окружения:
+     ```
+     NEXT_PUBLIC_PRIVY_APP_ID=cmbhhu8sr00mojr0l66siei2z
+     ```
+   - Нажмите "Deploy"
 
-### Или запустите локальный сервер:
+3. **Готово!** Ваше приложение будет доступно на `your-project.vercel.app`
+
+### Локальная разработка
+
 ```bash
-# Python
-python -m http.server 8000
+# Установка зависимостей
+npm install
 
-# Node.js
-npx http-server . -p 8000
+# Создание файла окружения
+echo "NEXT_PUBLIC_PRIVY_APP_ID=cmbhhu8sr00mojr0l66siei2z" > .env.local
 
-# PHP
-php -S localhost:8000
+# Запуск dev сервера
+npm run dev
 ```
 
-Откройте в браузере: `http://localhost:8000`
+Откройте [http://localhost:3000](http://localhost:3000)
 
-## 🎮 Что работает сейчас
+## 🛠 Технологический стек
 
-### ✅ Полностью рабочие функции:
-- 🔗 **Демо-вход** - простая аутентификация
-- 🌐 **Подключение к Seismic Devnet** - получение данных сети
-- 💸 **Симуляция транзакций** - тестовые операции
-- 🔐 **Симуляция зашифрованных данных** - демо шифрования
-- 📋 **История транзакций** - локальное сохранение
-- 🎨 **Красивый UI** - анимации и градиенты
+- **Frontend**: Next.js 14, React 18
+- **Wallet Integration**: Privy React SDK
+- **Blockchain**: Ethers.js v6
+- **Styling**: CSS3 с адаптивным дизайном
+- **Deployment**: Vercel
 
-### 🔄 В планах (когда будет нужно):
-- 👛 Реальные кошельки через Privy
-- 💰 Настоящие транзакции
-- 🎮 Игровые механики
+## 🌐 Конфигурация сети
 
-## 🌐 Seismic Devnet
-
-### Параметры сети
-- **Chain ID**: `5124`
-- **RPC URL**: `https://node-2.seismicdev.net/rpc`
-- **WebSocket**: `wss://node-2.seismicdev.net/ws`
-- **Explorer**: `https://explorer-2.seismicdev.net/`
-- **Faucet**: `https://faucet-2.seismicdev.net/`
-
-### Добавление сети в MetaMask
 ```javascript
-{
-  chainId: '0x1404',
-  chainName: 'Seismic Devnet',
-  nativeCurrency: {
-    name: 'Seismic ETH',
-    symbol: 'SETH',
-    decimals: 18
+Seismic Devnet
+├── Chain ID: 5124
+├── RPC URL: https://node-2.seismicdev.net/rpc
+├── Currency: SETH (Seismic ETH)
+└── Explorer: https://explorer-2.seismicdev.net/
+```
+
+## 📋 Функциональность
+
+### Подключение кошелька
+- ✅ MetaMask
+- ✅ Coinbase Wallet
+- ✅ WalletConnect
+- ✅ Rainbow Wallet
+- ✅ Встроенные кошельки Privy
+
+### Операции с блокчейном
+- 💰 Просмотр баланса
+- 📤 Отправка транзакций
+- 📊 История транзакций
+- 🔄 Автоматическое обновление статуса
+
+## 🎯 Использование
+
+1. **Подключитесь** нажав "Connect Wallet"
+2. **Выберите кошелек** (MetaMask рекомендуется)
+3. **Подтвердите** подключение к Seismic Network
+4. **Отправляйте транзакции** на другие адреса
+5. **Отслеживайте** историю в реальном времени
+
+## 🔧 Конфигурация Privy
+
+```javascript
+// Основные настройки
+const privyConfig = {
+  appearance: {
+    accentColor: '#6A6FF5',
+    theme: 'light',
+    showWalletLoginFirst: true,
   },
-  rpcUrls: ['https://node-2.seismicdev.net/rpc'],
-  blockExplorerUrls: ['https://explorer-2.seismicdev.net/']
-}
+  loginMethods: ['wallet', 'email'],
+  defaultChain: seismicNetwork,
+  externalWallets: {
+    metamask: true,
+    coinbaseWallet: true,
+    walletConnect: true,
+    rainbow: true,
+  },
+};
 ```
 
-## 🔧 Технические детали
-
-### 📁 Структура файлов
+## 📁 Структура проекта
 
 ```
-SG/
-├── 📄 index.html              # Главный файл (РАБОЧИЙ!)
-├── 📄 package.json            # NPM зависимости
-├── 📄 vercel.json            # Конфигурация Vercel
-├── 🎨 style.css              # Основные стили
-├── ⚙️ seismic-config.js      # Конфигурация сети
-├── 🔧 seismic-sdk.js         # SDK для работы с блокчейном
-└── 📚 README.md              # Эта документация
+seismic-game/
+├── pages/
+│   ├── _app.js          # Privy Provider
+│   └── index.js         # Главная страница
+├── styles/
+│   └── globals.css      # Стили
+├── package.json         # Зависимости
+├── next.config.js       # Конфигурация Next.js
+├── vercel.json          # Настройки Vercel
+└── README.md
 ```
 
-### 🔧 Технологический стек
+## 🔑 Переменные окружения
 
-| Компонент | Технология | Версия | Статус |
-|-----------|------------|---------|---------|
-| **Frontend** | React | 18.2.0 | ✅ Работает |
-| **Blockchain** | Ethers.js | 6.7.1 | ✅ Работает |
-| **Styling** | Bootstrap + CSS3 | 5.3.0 | ✅ Работает |
-| **Build** | Babel Standalone | Latest | ✅ Работает |
-| **Auth** | Demo Mode | - | ✅ Временно |
+```bash
+# Обязательные
+NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id
 
-## 📦 Развертывание
+# Опциональные (уже настроены)
+NEXT_PUBLIC_SEISMIC_RPC_URL=https://node-2.seismicdev.net/rpc
+NEXT_PUBLIC_SEISMIC_EXPLORER_URL=https://explorer-2.seismicdev.net/
+NEXT_PUBLIC_SEISMIC_CHAIN_ID=5124
+```
 
-### GitHub Pages
-Проект уже готов для GitHub Pages:
-1. Зайдите в Settings репозитория
-2. Включите GitHub Pages для main branch
-3. Ваш сайт будет доступен по адресу: `https://alexanderblv.github.io/SG/`
+## 🐛 Отладка
 
-### Vercel (рекомендуется)
-1. Подключите репозиторий к Vercel
-2. Деплой происходит автоматически
-3. Настройка не требуется!
+### Частые проблемы
 
-### Локально
-Просто откройте `index.html` в браузере!
+1. **Кошелек не подключается**
+   - Убедитесь, что установлен MetaMask
+   - Проверьте правильность App ID Privy
 
-## 🐛 Устранение проблем
+2. **Транзакции не отправляются**
+   - Проверьте баланс SETH
+   - Убедитесь в правильности адреса получателя
 
-### Если что-то не работает:
-1. ✅ **Откройте Developer Tools (F12)** - проверьте ошибки
-2. ✅ **Обновите страницу (Ctrl+F5)** - принудительное обновление
-3. ✅ **Проверьте интернет** - нужен для CDN
-4. ✅ **Попробуйте другой браузер** - Chrome/Firefox/Edge
+3. **Не отображается баланс**
+   - Проверьте подключение к Seismic RPC
+   - Обновите страницу
 
-### Частые ошибки (УЖЕ ИСПРАВЛЕНЫ):
-- ❌ ~~CDN не загружается~~ → ✅ Исправлено
-- ❌ ~~Фиолетовый экран~~ → ✅ Исправлено  
-- ❌ ~~MetaMask конфликты~~ → ✅ Исправлено
-- ❌ ~~Ошибки компиляции~~ → ✅ Исправлено
+## 📈 Мониторинг
+
+В панели Vercel доступны:
+- 📊 Аналитика производительности
+- 📋 Логи развертывания
+- 🔍 Real-time функции
+- 📱 Мобильная оптимизация
 
 ## 🤝 Вклад в проект
 
-Проект готов к использованию! Если хотите добавить функции:
-
 1. Fork репозитория
-2. Создайте ветку: `git checkout -b feature/amazing-feature`
-3. Commit изменения: `git commit -m 'Add amazing feature'`
-4. Push в ветку: `git push origin feature/amazing-feature`
-5. Откройте Pull Request
-
-## 📞 Поддержка
-
-- 🐛 **Баги**: [GitHub Issues](https://github.com/alexanderblv/SG/issues)
-- 💬 **Вопросы**: [GitHub Discussions](https://github.com/alexanderblv/SG/discussions)
-- 📧 **Email**: создайте issue в репозитории
+2. Создайте feature branch
+3. Внесите изменения
+4. Создайте Pull Request
 
 ## 📄 Лицензия
 
-MIT License - используйте свободно!
+MIT License - см. [LICENSE](LICENSE)
+
+## 🔗 Полезные ссылки
+
+- [Privy Documentation](https://docs.privy.io/)
+- [Seismic Network](https://explorer-2.seismicdev.net/)
+- [Vercel Deployment](https://vercel.com/docs)
+- [Next.js Documentation](https://nextjs.org/docs)
 
 ---
 
-**🎉 Поздравляем! Проект полностью рабочий и готов к использованию!**
-
-### Демо доступно по адресу: 
-- **GitHub**: https://github.com/alexanderblv/SG
-- **Live Demo**: [Скоро будет доступно на GitHub Pages]
-
-*Последнее обновление: Декабрь 2024 - Все ошибки исправлены! ✅* 
+**🎮 Начните играть на Seismic прямо сейчас!** 

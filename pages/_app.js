@@ -1,5 +1,8 @@
-// Конфигурация Seismic Devnet
-export const seismicNetwork = {
+import { PrivyProvider } from '@privy-io/react-auth';
+import '../styles/globals.css';
+
+// Конфигурация Seismic Network
+const seismicNetwork = {
   id: 5124,
   name: 'Seismic Devnet',
   network: 'seismic-devnet',
@@ -11,7 +14,6 @@ export const seismicNetwork = {
   rpcUrls: {
     public: { http: ['https://node-2.seismicdev.net/rpc'] },
     default: { http: ['https://node-2.seismicdev.net/rpc'] },
-    webSocket: { ws: ['wss://node-2.seismicdev.net/ws'] },
   },
   blockExplorers: {
     default: { 
@@ -22,11 +24,8 @@ export const seismicNetwork = {
   testnet: true,
 };
 
-// Настройки Privy App
-export const PRIVY_APP_ID = 'cmbhhu8sr00mojr0l66siei2z';
-
-// Конфигурация для Privy v2.13.0
-export const privyConfig = {
+// Конфигурация Privy
+const privyConfig = {
   appearance: {
     accentColor: '#6A6FF5',
     theme: 'light',
@@ -42,7 +41,6 @@ export const privyConfig = {
   },
   defaultChain: seismicNetwork,
   supportedChains: [seismicNetwork],
-  // Включаем внешние кошельки
   externalWallets: {
     metamask: true,
     coinbaseWallet: true,
@@ -51,13 +49,17 @@ export const privyConfig = {
   },
 };
 
-// Дополнительные константы
-export const FAUCET_URL = 'https://faucet-2.seismicdev.net/';
-export const EXPLORER_URL = 'https://explorer-2.seismicdev.net/';
+function MyApp({ Component, pageProps }) {
+  const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || 'cmbhhu8sr00mojr0l66siei2z';
+  
+  return (
+    <PrivyProvider
+      appId={appId}
+      config={privyConfig}
+    >
+      <Component {...pageProps} />
+    </PrivyProvider>
+  );
+}
 
-// Конфигурация зашифрованных типов данных
-export const ENCRYPTED_TYPES = {
-  SUINT: 'suint',
-  SADDRESS: 'saddress',
-  SBOOL: 'sbool',
-}; 
+export default MyApp; 
