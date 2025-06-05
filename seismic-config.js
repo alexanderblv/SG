@@ -25,34 +25,30 @@ export const seismicNetwork = {
 // Настройки Privy App
 export const PRIVY_APP_ID = 'cmbhhu8sr00mojr0l66siei2z';
 
-// Конфигурация для Privy
+// Конфигурация для Privy v2.13.0
 export const privyConfig = {
-  appId: PRIVY_APP_ID,
-  config: {
-    appearance: {
-      accentColor: '#6A6FF5',
-      theme: 'light',
-      showWalletLoginFirst: true,
-      logo: 'https://docs.privy.io/img/logo.svg',
-      walletChainType: 'ethereum-only',
-    },
-    loginMethods: ['wallet', 'email'],
-    embeddedWallets: {
-      createOnLogin: 'users-without-wallets',
-      requireUserPasswordOnCreate: false,
-      showWalletUIs: true,
-    },
-    defaultChain: seismicNetwork,
-    supportedChains: [seismicNetwork],
-    // Включаем внешние кошельки
-    externalWallets: {
-      metamask: true,
-      coinbaseWallet: true,
-      walletConnect: true,
-      rainbow: true,
-      injected: true,
-    },
-  }
+  appearance: {
+    accentColor: '#6A6FF5',
+    theme: 'light',
+    showWalletLoginFirst: true,
+    logo: 'https://docs.privy.io/img/logo.svg',
+    walletChainType: 'ethereum-only',
+  },
+  loginMethods: ['wallet', 'email'],
+  embeddedWallets: {
+    createOnLogin: 'users-without-wallets',
+    requireUserPasswordOnCreate: false,
+    showWalletUIs: true,
+  },
+  defaultChain: seismicNetwork,
+  supportedChains: [seismicNetwork],
+  // Включаем внешние кошельки
+  externalWallets: {
+    metamask: true,
+    coinbaseWallet: true,
+    walletConnect: true,
+    rainbow: true,
+  },
 };
 
 // Дополнительные константы

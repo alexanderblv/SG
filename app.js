@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 import { PrivyProvider, usePrivy, useWallets } from '@privy-io/react-auth';
-import { seismicNetwork, privyConfig } from './seismic-config.js';
+import { seismicNetwork, privyConfig, PRIVY_APP_ID } from './seismic-config.js';
 import { seismicSDK } from './seismic-sdk.js';
 import './style.css';
 
@@ -160,7 +160,7 @@ const SeismicGameApp = () => {
       setError(null);
       
       // Инициализируем SDK с провайдером кошелька
-      const walletProvider = wallets[0]?.getEthersProvider();
+      const walletProvider = await wallets[0]?.getEthersProvider();
       await seismicSDK.init(walletProvider);
       
       // Получаем информацию о балансе
@@ -198,155 +198,166 @@ const SeismicGameApp = () => {
     }
   };
 
-  const handleSendTransaction = async (to, value) => {
-    if (!seismicSDK.isWalletConnected()) {
-      alert('Кошелек не подключен');
-      return;
-    }
-
+  const handleSendTransaction = async (to, amount) => {
     try {
       setLoading(true);
+      setError(null);
       
-      const transaction = await seismicSDK.sendTransaction({ to, value });
+      const txHash = await seismicSDK.sendTransaction(to, amount);
       
-      alert(`Транзакция отправлена!\nHash: ${transaction.hash}`);
+      const newTransaction = {
+        hash: txHash,
+        to,
+        amount,
+        type: 'regular',
+        status: 'pending',
+        timestamp: new Date().toLocaleString()
+      };
       
-      // Обновляем историю
-      setTransactions(seismicSDK.getHistory());
+      setTransactions(prev => [newTransaction, ...prev]);
       
-      // Обновляем баланс
+      // Обновляем баланс после транзакции
       if (user?.wallet?.address) {
         setTimeout(() => updateBalance(user.wallet.address), 2000);
       }
       
     } catch (error) {
       console.error('Ошибка отправки транзакции:', error);
-      alert('Ошибка отправки транзакции: ' + error.message);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleSendEncrypted = async (data, type) => {
-    if (!seismicSDK.isWalletConnected()) {
-      alert('Кошелек не подключен');
-      return;
-    }
-
     try {
       setLoading(true);
+      setError(null);
       
-      const transaction = await seismicSDK.sendEncryptedTransaction({
-        to: '0x742d35Cc6635C0532925a3b8D3Ac27FAACE6547',
-        encryptedData: data,
-        type
-      });
+      const txHash = await seismicSDK.sendEncryptedData(data, type);
       
-      alert(`Зашифрованная транзакция отправлена!\nType: ${type}\nHash: ${transaction.hash}`);
+      const newTransaction = {
+        hash: txHash,
+        data,
+        type: 'encrypted',
+        status: 'pending',
+        timestamp: new Date().toLocaleString()
+      };
       
-      // Обновляем историю
-      setTransactions(seismicSDK.getHistory());
+      setTransactions(prev => [newTransaction, ...prev]);
       
     } catch (error) {
-      console.error('Ошибка отправки зашифрованной транзакции:', error);
-      alert('Ошибка отправки: ' + error.message);
+      console.error('Ошибка отправки зашифрованных данных:', error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  // Если Privy еще не готов
   if (!ready) {
     return (
-      <div className="app-container">
-        <div className="main-content">
-          <div className="card text-center">
-            <div className="loading" style={{margin: '0 auto'}}></div>
-            <p className="mt-2">Загрузка Seismic Game...</p>
+      <div className="container d-flex justify-content-center align-items-center min-vh-100">
+        <div className="text-center">
+          <div className="spinner-border text-primary mb-3" role="status">
+            <span className="visually-hidden">Загрузка...</span>
+          </div>
+          <h5>Инициализация Privy...</h5>
+        </div>
+      </div>
+    );
+  }
+
+  // Если пользователь не аутентифицирован
+  if (!authenticated) {
+    return (
+      <div className="container d-flex justify-content-center align-items-center min-vh-100">
+        <div className="card auth-card">
+          <div className="card-body text-center">
+            <div className="logo-section mb-4">
+              <div className="logo">🌊</div>
+              <h2 className="app-title">Seismic Game</h2>
+              <p className="text-muted">Подключите кошелек для начала игры</p>
+            </div>
+            
+            <button 
+              className="btn btn-primary btn-lg connect-wallet-btn"
+              onClick={login}
+            >
+              🔗 Подключить кошелек
+            </button>
+            
+            <div className="footer-info mt-4">
+              <small className="text-muted">
+                Поддерживается MetaMask, Coinbase Wallet, WalletConnect и встроенные кошельки
+              </small>
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
+  // Основной интерфейс для аутентифицированного пользователя
   return (
-    <div className="app-container">
-      {/* Хедер */}
-      <header className="header">
-        <div className="header-content">
-          <a href="#" className="logo">Seismic Game</a>
+    <div className="container py-4">
+      {/* Заголовок */}
+      <div className="header mb-4">
+        <div className="d-flex justify-content-between align-items-center">
           <div>
-            {authenticated ? (
-              <button className="btn btn-danger" onClick={logout}>
-                🚪 Выйти
-              </button>
-            ) : (
-              <button className="btn btn-primary" onClick={login}>
-                🔗 Войти
-              </button>
-            )}
+            <h1 className="h3 mb-1">🌊 Seismic Game</h1>
+            <p className="text-muted">Блокчейн-приложение на Seismic Devnet</p>
           </div>
+          <button 
+            className="btn btn-outline-secondary"
+            onClick={logout}
+          >
+            🚪 Выйти
+          </button>
         </div>
-      </header>
+      </div>
 
-      {/* Основной контент */}
-      <main className="main-content">
-        {error && (
-          <div className="card" style={{backgroundColor: '#fee', borderColor: '#fcc'}}>
-            <h4>❌ Ошибка</h4>
-            <p>{error}</p>
-            <button className="btn btn-primary" onClick={() => setError(null)}>
-              Попробовать снова
-            </button>
-          </div>
-        )}
+      {/* Ошибка */}
+      {error && (
+        <div className="alert alert-danger alert-dismissible fade show" role="alert">
+          <strong>Ошибка:</strong> {error}
+          <button type="button" className="btn-close" onClick={() => setError(null)}></button>
+        </div>
+      )}
 
-        {!authenticated ? (
-          // Экран для неавторизованных пользователей
-          <div className="card text-center">
-            <h1>🌊 Добро пожаловать в Seismic Game</h1>
-            <p className="mb-3">
-              Современное блокчейн-приложение с поддержкой зашифрованных транзакций
-              и интеграцией с Seismic Devnet.
-            </p>
-            <button className="btn btn-primary btn-lg" onClick={login}>
-              🚀 Подключить кошелек и начать
-            </button>
-            <div className="mt-3">
-              <small>Поддерживается вход через email или Web3 кошелек</small>
-            </div>
-          </div>
-        ) : (
-          // Основной интерфейс для авторизованных пользователей
-          <>
-            <UserInfo user={user} balance={balance} networkInfo={networkInfo} />
-            <GameActions 
-              onSendTransaction={handleSendTransaction}
-              onSendEncrypted={handleSendEncrypted}
-              loading={loading}
-            />
-            <TransactionHistory transactions={transactions} />
-            <NetworkInfo networkInfo={networkInfo} />
-          </>
-        )}
-      </main>
-
-      {/* Футер */}
-      <footer className="footer">
-        <p>&copy; 2024 Seismic Game. Powered by Privy Auth SDK & Seismic Devnet</p>
-      </footer>
+      {/* Основная сетка */}
+      <div className="row g-4">
+        <div className="col-lg-6">
+          <UserInfo user={user} balance={balance} networkInfo={networkInfo} />
+        </div>
+        <div className="col-lg-6">
+          <GameActions 
+            onSendTransaction={handleSendTransaction}
+            onSendEncrypted={handleSendEncrypted}
+            loading={loading}
+          />
+        </div>
+        <div className="col-lg-6">
+          <NetworkInfo networkInfo={networkInfo} />
+        </div>
+        <div className="col-lg-6">
+          <TransactionHistory transactions={transactions} />
+        </div>
+      </div>
     </div>
   );
 };
 
-// Корневой компонент с Privy Provider
+// Главный компонент приложения с Privy Provider
 const App = () => (
   <PrivyProvider
-    appId={privyConfig.appId}
-    config={privyConfig.config}
+    appId={PRIVY_APP_ID}
+    config={privyConfig}
   >
     <SeismicGameApp />
   </PrivyProvider>
 );
 
-// Рендер приложения
-ReactDOM.render(<App />, document.getElementById('root')); 
+// Монтирование приложения
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />); 
