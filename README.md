@@ -7,49 +7,19 @@
 ![Privy](https://img.shields.io/badge/Privy-1.82.4-6A6FF5)
 ![Next.js](https://img.shields.io/badge/Next.js-14.0.0-000000)
 
-## ✨ Ключевые особенности
+## 🔒 ВАЖНО: Работа с кошельками ТОЛЬКО через Privy!
 
-- 🔗 **Автоматическое подключение к Seismic** - приложение автоматически переключает кошелек на Seismic Network
-- 🌐 **Надежная интеграция с Seismic** (Chain ID: 5124) с постоянным мониторингом сети
-- 💼 **Поддержка всех кошельков**: MetaMask, Coinbase Wallet, WalletConnect, Rainbow
-- 🚰 **Встроенные ссылки на ресурсы**: faucet для тестовых токенов, explorer, документация
-- 📧 **Email-based wallets** - встроенные кошельки Privy
-- 💸 **Отправка транзакций** с отслеживанием статуса в реальном времени
-- 🔐 **Seismic Encryption Types** - демонстрация зашифрованных типов данных
-- 📱 **Адаптивный дизайн** для всех устройств
-- ⚡ **Развертывание на Vercel** в один клик
+**Мы работаем с кошельками на сайте ТОЛЬКО через Privy. Прямо ТОЛЬКО через него!**
 
-## 🚀 Быстрый старт
+Это приложение использует Privy для обеспечения максимальной безопасности всех операций с кошельками и блокчейном. Все подключения кошельков, транзакции и взаимодействия проходят исключительно через систему Privy.
 
-### Развертывание на Vercel
+### ⚠️ Предотвращение конфликтов кошельков
 
-1. **Fork этого репозитория**
-2. **Подключите к Vercel:**
-   - Перейдите на [vercel.com](https://vercel.com)
-   - Нажмите "New Project"
-   - Импортируйте ваш GitHub репозиторий
-   - Добавьте переменную окружения:
-     ```
-     NEXT_PUBLIC_PRIVY_APP_ID=cmbhhu8sr00mojr0l66siei2z
-     ```
-   - Нажмите "Deploy"
+Для корректной работы приложения:
 
-3. **Готово!** Ваше приложение будет доступно на `your-project.vercel.app`
-
-### Локальная разработка
-
-```bash
-# Установка зависимостей
-npm install
-
-# Создание файла окружения
-echo "NEXT_PUBLIC_PRIVY_APP_ID=cmbhhu8sr00mojr0l66siei2z" > .env.local
-
-# Запуск dev сервера
-npm run dev
-```
-
-Откройте [http://localhost:3000](http://localhost:3000)
+1. **Отключите все кошельки кроме MetaMask**
+2. **Используйте только интерфейс Privy для подключения**
+3. **Перезагрузите страницу после отключения лишних кошельков**
 
 ## 🌐 Seismic Network Integration
 
@@ -132,7 +102,7 @@ const privyConfig = {
   supportedChains: [seismicNetwork], // Только Seismic
   externalWallets: {
     metamask: true,
-    coinbaseWallet: true,
+    coinbaseWallet: false, // Отключен для предотвращения конфликтов
     walletConnect: true,
     rainbow: true,
   },
@@ -229,4 +199,64 @@ MIT License - см. [LICENSE](LICENSE)
 
 ---
 
-**🎮 Начните играть на Seismic прямо сейчас!** 
+**🎮 Начните играть на Seismic прямо сейчас!**
+
+## 📋 Описание
+
+Веб-приложение для отправки транзакций в сети Seismic Devnet с поддержкой:
+
+- 🔐 **Безопасное подключение кошелька через Privy**
+- 🌐 **Автоматическое переключение на Seismic Network**
+- 💸 **Отправка обычных транзакций**
+- 🔒 **Поддержка шифрованных транзакций Seismic**
+- 📊 **История транзакций**
+- 🎨 **Современный UI с темной темой**
+
+## 🛠️ Быстрый старт
+
+1. **Настройте кошелек:**
+   - Убедитесь что установлен только MetaMask
+   - Отключите все остальные кошельки (Rabby, Coinbase Wallet, Trust Wallet и др.)
+
+2. **Запустите приложение:**
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+3. **Подключитесь через Privy:**
+   - Нажмите "Connect Wallet" в интерфейсе
+   - Следуйте инструкциям Privy
+   - Подтвердите добавление Seismic Network
+
+4. **Получите тестовые токены:**
+   - Перейдите на [Seismic Faucet](https://faucet-2.seismicdev.net/)
+   - Введите ваш адрес кошелька
+   - Получите бесплатные SETH токены
+
+## 🔧 Конфигурация
+
+### Настройка Privy
+Приложение использует Privy App ID: `cmbhhu8sr00mojr0l66siei2z`
+
+```javascript
+// pages/_app.js
+const privyConfig = {
+  appearance: {
+    accentColor: '#6A6FF5',
+    theme: 'light',
+    showWalletLoginFirst: true,
+  },
+  loginMethods: ['wallet', 'email'],
+  defaultChain: seismicNetwork,
+  supportedChains: [seismicNetwork], // Только Seismic
+  externalWallets: {
+    metamask: true,
+    coinbaseWallet: false, // Отключен для предотвращения конфликтов
+    walletConnect: true,
+    rainbow: true,
+  },
+};
+```
+
+## 🌐 Seismic Network Integration 
