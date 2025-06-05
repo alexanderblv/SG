@@ -34,90 +34,6 @@ const SEISMIC_LINKS = {
   devnet: 'https://docs.seismic.systems/appendix/devnet'
 };
 
-// Компонент для обнаружения конфликтов кошельков
-function WalletConflictDetector() {
-  const [hasConflict, setHasConflict] = useState(false);
-  const [detectedWallets, setDetectedWallets] = useState([]);
-
-  useEffect(() => {
-    // Проверяем наличие различных кошельков
-    const wallets = [];
-    
-    if (typeof window !== 'undefined') {
-      if (window.ethereum) {
-        if (window.ethereum.isMetaMask) wallets.push('MetaMask');
-        if (window.ethereum.isCoinbaseWallet) wallets.push('Coinbase Wallet');
-        if (window.ethereum.isRabby) wallets.push('Rabby');
-        if (window.ethereum.isTrust) wallets.push('Trust Wallet');
-        if (window.ethereum.isFrame) wallets.push('Frame');
-        if (window.ethereum.isExodus) wallets.push('Exodus');
-        if (window.ethereum.isBraveWallet) wallets.push('Brave Wallet');
-        
-        // Проверяем наличие массива провайдеров (конфликт)
-        if (window.ethereum.providers && window.ethereum.providers.length > 1) {
-          setHasConflict(true);
-          window.ethereum.providers.forEach(provider => {
-            if (provider.isMetaMask) wallets.push('MetaMask');
-            if (provider.isCoinbaseWallet) wallets.push('Coinbase Wallet');
-            if (provider.isRabby) wallets.push('Rabby');
-            if (provider.isTrust) wallets.push('Trust Wallet');
-            if (provider.isFrame) wallets.push('Frame');
-            if (provider.isExodus) wallets.push('Exodus');
-            if (provider.isBraveWallet) wallets.push('Brave Wallet');
-          });
-        }
-      }
-      
-      setDetectedWallets([...new Set(wallets)]);
-      
-      // Если больше одного кошелька, возможен конфликт
-      if (wallets.length > 1) {
-        setHasConflict(true);
-      }
-    }
-  }, []);
-
-  if (!hasConflict && detectedWallets.length <= 1) return null;
-
-  return (
-    <div className="wallet-conflict-warning">
-      <div className="conflict-header">
-        ⚠️ <strong>Wallet Conflict Detected</strong>
-      </div>
-      <div className="conflict-info">
-        <p><strong>Multiple wallet extensions detected:</strong> {detectedWallets.join(', ')}</p>
-        
-        <div className="privy-notice">
-          <div className="privy-notice-header">
-            🔒 <strong>Important: We work with wallets on this site ONLY through Privy!</strong>
-          </div>
-          <p>Мы работаем с кошельками на сайте ТОЛЬКО через Privy. Прямо ТОЛЬКО через него!</p>
-        </div>
-        
-        <div className="conflict-solutions">
-          <h5>To resolve conflicts:</h5>
-          <ol>
-            <li><strong>Disable other wallet extensions except MetaMask</strong></li>
-            <li>Or use only one wallet extension at a time</li>
-            <li><strong>Refresh the page after disabling other wallets</strong></li>
-            <li>All wallet interactions will be handled securely through Privy</li>
-          </ol>
-        </div>
-        <div className="conflict-help">
-          <strong>Browser Settings:</strong>
-          <ul>
-            <li><strong>Chrome/Edge:</strong> More tools → Extensions → Disable other wallets</li>
-            <li><strong>Firefox:</strong> Add-ons and themes → Extensions → Disable other wallets</li>
-          </ul>
-          <div className="privy-reminder">
-            <small>✅ Once configured, Privy will handle all wallet connections safely and securely</small>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function Home() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
@@ -647,9 +563,6 @@ Block Explorer: https://explorer-2.seismicdev.net/
         </div>
       </header>
 
-      {/* Wallet Conflict Detection */}
-      <WalletConflictDetector />
-
       <main className="main-content">
         {!authenticated ? (
           <div className="welcome-section">
@@ -683,17 +596,6 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 </div>
               </div>
               
-              <div className="privy-security-notice">
-                <div className="privy-security-header">
-                  🔒 <strong>Secure Wallet Connection via Privy</strong>
-                </div>
-                <p>
-                  All wallet connections and transactions are processed through Privy for maximum security.
-                  <br />
-                  <strong>Мы работаем с кошельками ТОЛЬКО через Privy!</strong>
-                </p>
-              </div>
-              
               <button className="btn btn-primary btn-large" onClick={login}>
                 Connect Wallet
               </button>
@@ -712,9 +614,6 @@ Block Explorer: https://explorer-2.seismicdev.net/
               {/* Wallet Information */}
               <div className="card">
                 <h3 className="card-title">🔒 Wallet Information</h3>
-                <div className="privy-connected-notice">
-                  <span className="privy-badge">Secured by Privy</span>
-                </div>
                 <div className="info-section">
                   <div className="info-item">
                     <label>Your Address</label>
@@ -999,19 +898,6 @@ Block Explorer: https://explorer-2.seismicdev.net/
           </div>
         )}
       </main>
-      
-      <footer className="app-footer">
-        <div className="footer-content">
-          <div className="privy-footer-notice">
-            🔒 <strong>Secured by Privy</strong> - All wallet connections and transactions are protected by enterprise-grade security
-          </div>
-          <div className="footer-disclaimer">
-            <small>
-              Мы работаем с кошельками на сайте ТОЛЬКО через Privy. Для безопасности отключите все остальные кошельки кроме MetaMask.
-            </small>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 } 
