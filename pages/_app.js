@@ -43,11 +43,26 @@ const privyConfig = {
   supportedChains: [seismicNetwork],
   externalWallets: {
     metamask: true,
-    coinbaseWallet: false,
+    coinbaseWallet: true,
     walletConnect: true,
     rainbow: true,
   },
   chains: [seismicNetwork],
+  // Принудительно переключать на Seismic при подключении
+  chainConfig: {
+    [seismicNetwork.id]: {
+      rpcTarget: seismicNetwork.rpcUrls.default.http[0],
+      chainId: seismicNetwork.id,
+      networkName: seismicNetwork.name,
+      blockExplorer: seismicNetwork.blockExplorers.default.url,
+      ticker: seismicNetwork.nativeCurrency.symbol,
+      tickerName: seismicNetwork.nativeCurrency.name,
+    },
+  },
+  mfaConfig: {
+    noPromptOnMfaRequired: true,
+  },
+  walletConnectCloudProjectId: 'your-project-id-here', // Заменить на реальный ID
 };
 
 function MyApp({ Component, pageProps }) {

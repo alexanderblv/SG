@@ -1,20 +1,21 @@
-# 🌊 Seismic Game - Wallet Connection
+# 🌊 Seismic Transaction Sender
 
-Современное Web3 приложение для подключения кошелька через **Privy React SDK** и взаимодействия с **Seismic Blockchain**.
+Современное Web3 приложение для работы с **Seismic Blockchain** через **Privy React SDK** с автоматическим переключением сети и встроенными ресурсами.
 
 ![Seismic Game](https://img.shields.io/badge/Blockchain-Seismic-blue)
 ![React](https://img.shields.io/badge/React-18.2.0-61DAFB)
 ![Privy](https://img.shields.io/badge/Privy-1.82.4-6A6FF5)
 ![Next.js](https://img.shields.io/badge/Next.js-14.0.0-000000)
 
-## ✨ Особенности
+## ✨ Ключевые особенности
 
-- 🔗 **Простое подключение кошелька** через Privy React SDK
-- 🌐 **Поддержка Seismic Network** (Chain ID: 5124)
-- 💼 **Множественные кошельки**: MetaMask, Coinbase Wallet, WalletConnect, Rainbow
+- 🔗 **Автоматическое подключение к Seismic** - приложение автоматически переключает кошелек на Seismic Network
+- 🌐 **Надежная интеграция с Seismic** (Chain ID: 5124) с постоянным мониторингом сети
+- 💼 **Поддержка всех кошельков**: MetaMask, Coinbase Wallet, WalletConnect, Rainbow
+- 🚰 **Встроенные ссылки на ресурсы**: faucet для тестовых токенов, explorer, документация
 - 📧 **Email-based wallets** - встроенные кошельки Privy
-- 💸 **Отправка транзакций** с отслеживанием статуса
-- 🔐 **Seismic Encryption** (опционально)
+- 💸 **Отправка транзакций** с отслеживанием статуса в реальном времени
+- 🔐 **Seismic Encryption Types** - демонстрация зашифрованных типов данных
 - 📱 **Адаптивный дизайн** для всех устройств
 - ⚡ **Развертывание на Vercel** в один клик
 
@@ -50,51 +51,76 @@ npm run dev
 
 Откройте [http://localhost:3000](http://localhost:3000)
 
-## 🛠 Технологический стек
+## 🌐 Seismic Network Integration
 
-- **Frontend**: Next.js 14, React 18
-- **Wallet Integration**: Privy React SDK
-- **Blockchain**: Ethers.js v6
-- **Styling**: CSS3 с адаптивным дизайном
-- **Deployment**: Vercel
+### Автоматическая настройка
+Приложение автоматически:
+- ✅ Обнаруживает текущую сеть кошелька
+- ✅ Переключает на Seismic Network при подключении
+- ✅ Мониторит изменения сети в реальном времени
+- ✅ Предоставляет кнопки для ручного переключения
 
-## 🌐 Конфигурация сети
-
+### Конфигурация сети
 ```javascript
 Seismic Devnet
 ├── Chain ID: 5124
 ├── RPC URL: https://node-2.seismicdev.net/rpc
 ├── Currency: SETH (Seismic ETH)
-└── Explorer: https://explorer-2.seismicdev.net/
+├── Explorer: https://explorer-2.seismicdev.net/
+└── Faucet: https://faucet-2.seismicdev.net/
 ```
+
+### Встроенные ресурсы
+- 🚰 **Faucet**: [https://faucet-2.seismicdev.net/](https://faucet-2.seismicdev.net/) - получение тестовых токенов
+- 🔍 **Explorer**: [https://explorer-2.seismicdev.net/](https://explorer-2.seismicdev.net/) - просмотр транзакций
+- 📚 **Документация**: [https://docs.seismic.systems/](https://docs.seismic.systems/)
+- 🛠 **Devnet Guide**: [https://docs.seismic.systems/appendix/devnet](https://docs.seismic.systems/appendix/devnet)
+
+## 🛠 Технологический стек
+
+- **Frontend**: Next.js 14, React 18
+- **Wallet Integration**: Privy React SDK с расширенной конфигурацией
+- **Blockchain**: Ethers.js v6 с автоматическим мониторингом сети
+- **Styling**: CSS3 с адаптивным дизайном и темной Seismic темой
+- **Network**: Автоматическое переключение и управление сетью
+- **Deployment**: Vercel с оптимизированной конфигурацией
 
 ## 📋 Функциональность
 
 ### Подключение кошелька
-- ✅ MetaMask
+- ✅ MetaMask (рекомендуется)
 - ✅ Coinbase Wallet
 - ✅ WalletConnect
 - ✅ Rainbow Wallet
 - ✅ Встроенные кошельки Privy
 
+### Seismic Network Features
+- 🔄 **Автоматическое переключение** на Seismic при подключении
+- 🌐 **Мониторинг сети** в реальном времени
+- ⚠️ **Предупреждения** о неправильной сети
+- 🚰 **Прямые ссылки** на faucet для получения тестовых токенов
+- 📊 **Информационная панель** с деталями сети
+
 ### Операции с блокчейном
-- 💰 Просмотр баланса
-- 📤 Отправка транзакций
-- 📊 История транзакций
+- 💰 Просмотр баланса SETH
+- 📤 Отправка транзакций только на Seismic
+- 🔐 Демо зашифрованных типов данных (suint, saddress, sbool)
+- 📊 История транзакций с детальной информацией
 - 🔄 Автоматическое обновление статуса
 
 ## 🎯 Использование
 
 1. **Подключитесь** нажав "Connect Wallet"
-2. **Выберите кошелек** (MetaMask рекомендуется)
-3. **Подтвердите** подключение к Seismic Network
-4. **Отправляйте транзакции** на другие адреса
-5. **Отслеживайте** историю в реальном времени
+2. **Автоматическое переключение** на Seismic Network (или используйте кнопку Switch)
+3. **Получите тестовые токены** через встроенную ссылку на faucet
+4. **Отправляйте транзакции** с опциональным шифрованием
+5. **Экспериментируйте** с зашифрованными типами данных
+6. **Отслеживайте** историю в реальном времени
 
 ## 🔧 Конфигурация Privy
 
 ```javascript
-// Основные настройки
+// Расширенная конфигурация для Seismic
 const privyConfig = {
   appearance: {
     accentColor: '#6A6FF5',
@@ -103,11 +129,19 @@ const privyConfig = {
   },
   loginMethods: ['wallet', 'email'],
   defaultChain: seismicNetwork,
+  supportedChains: [seismicNetwork], // Только Seismic
   externalWallets: {
     metamask: true,
     coinbaseWallet: true,
     walletConnect: true,
     rainbow: true,
+  },
+  chainConfig: {
+    [seismicNetwork.id]: {
+      rpcTarget: 'https://node-2.seismicdev.net/rpc',
+      chainId: 5124,
+      networkName: 'Seismic Devnet',
+    },
   },
 };
 ```
@@ -115,17 +149,29 @@ const privyConfig = {
 ## 📁 Структура проекта
 
 ```
-seismic-game/
+seismic-transaction-sender/
 ├── pages/
-│   ├── _app.js          # Privy Provider
-│   └── index.js         # Главная страница
+│   ├── _app.js          # Privy Provider с Seismic конфигурацией
+│   └── index.js         # Главная страница с автоматическим переключением
 ├── styles/
-│   └── globals.css      # Стили
+│   └── globals.css      # Стили с Seismic темой
+├── SEISMIC_SETUP.md     # Инструкции по настройке Seismic
 ├── package.json         # Зависимости
 ├── next.config.js       # Конфигурация Next.js
 ├── vercel.json          # Настройки Vercel
 └── README.md
 ```
+
+## 🚰 Получение тестовых токенов
+
+После подключения к Seismic Network:
+
+1. **Скопируйте** адрес кошелька из приложения
+2. **Перейдите** на [faucet](https://faucet-2.seismicdev.net/)
+3. **Вставьте** адрес и запросите токены
+4. **Дождитесь** поступления SETH на баланс
+
+💡 В приложении есть прямая ссылка на faucet и предупреждение о низком балансе!
 
 ## 🔑 Переменные окружения
 

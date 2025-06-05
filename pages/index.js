@@ -26,6 +26,14 @@ const SEISMIC_NETWORK = {
   testnet: true,
 };
 
+// Ссылки экосистемы Seismic
+const SEISMIC_LINKS = {
+  faucet: 'https://faucet-2.seismicdev.net/',
+  explorer: 'https://explorer-2.seismicdev.net/',
+  docs: 'https://docs.seismic.systems/',
+  devnet: 'https://docs.seismic.systems/appendix/devnet'
+};
+
 export default function Home() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
@@ -36,6 +44,7 @@ export default function Home() {
   const [provider, setProvider] = useState(null);
   const [currentNetwork, setCurrentNetwork] = useState(null);
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
+  const [networkSwitchAttempted, setNetworkSwitchAttempted] = useState(false);
   
   // Форма для отправки транзакций
   const [recipientAddress, setRecipientAddress] = useState('');
@@ -75,10 +84,18 @@ export default function Home() {
       }
       
       setCurrentNetwork({ chainId, name: networkName });
-      setIsCorrectNetwork(chainId === SEISMIC_NETWORK.id);
+      const isSeismic = chainId === SEISMIC_NETWORK.id;
+      setIsCorrectNetwork(isSeismic);
       
       console.log(`Current network: ${networkName} (Chain ID: ${chainId})`);
-      return chainId === SEISMIC_NETWORK.id;
+      
+      // Если не на Seismic и еще не пытались переключиться, автоматически пытаемся переключиться
+      if (!isSeismic && !networkSwitchAttempted && wallets.length > 0) {
+        console.log('Auto-switching to Seismic network...');
+        setTimeout(() => switchToSeismic(true), 1000);
+      }
+      
+      return isSeismic;
     } catch (error) {
       console.error('Error checking network:', error);
       setCurrentNetwork({ chainId: null, name: 'Unknown Network' });
@@ -88,51 +105,72 @@ export default function Home() {
   };
 
   // Переключение на Seismic сеть
-  const switchToSeismic = async () => {
+  const switchToSeismic = async (isAutomatic = false) => {
     if (!wallets.length) return;
     
     try {
       setLoading(true);
+      setNetworkSwitchAttempted(true);
       const ethereumProvider = await wallets[0].getEthereumProvider();
       
       const chainIdHex = `0x${SEISMIC_NETWORK.id.toString(16)}`;
       
-      // Сначала пробуем добавить сеть (если её нет)
-      try {
-        await ethereumProvider.request({
-          method: 'wallet_addEthereumChain',
-          params: [{
-            chainId: chainIdHex,
-            chainName: SEISMIC_NETWORK.name,
-            nativeCurrency: SEISMIC_NETWORK.nativeCurrency,
-            rpcUrls: [SEISMIC_NETWORK.rpcUrls.default.http[0]],
-            blockExplorerUrls: [SEISMIC_NETWORK.blockExplorers.default.url],
-          }],
-        });
-      } catch (addError) {
-        // Если сеть уже добавлена, это нормально
-        console.log('Network might already be added:', addError.message);
-      }
+      console.log(`${isAutomatic ? 'Auto-' : 'Manual '}switching to Seismic Network (Chain ID: ${SEISMIC_NETWORK.id})`);
       
-      // Теперь переключаемся на сеть
+      // Сначала пробуем переключиться на существующую сеть
       try {
         await ethereumProvider.request({
           method: 'wallet_switchEthereumChain',
           params: [{ chainId: chainIdHex }],
         });
+        
+        console.log('Successfully switched to existing Seismic network');
+        
+        // Ждем немного и проверяем что сеть изменилась
+        setTimeout(async () => {
+          await checkNetwork(ethereumProvider);
+        }, 1500);
+        
+        return;
       } catch (switchError) {
-        console.error('Error switching to network:', switchError);
-        throw new Error(`Failed to switch to Seismic network: ${switchError.message}`);
+        console.log('Network not found, attempting to add...', switchError.message);
+        
+        // Если сеть не найдена (ошибка 4902), добавляем её
+        if (switchError.code === 4902 || switchError.message.includes('Unrecognized chain ID')) {
+          try {
+            await ethereumProvider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: chainIdHex,
+                chainName: SEISMIC_NETWORK.name,
+                nativeCurrency: SEISMIC_NETWORK.nativeCurrency,
+                rpcUrls: [SEISMIC_NETWORK.rpcUrls.default.http[0]],
+                blockExplorerUrls: [SEISMIC_NETWORK.blockExplorers.default.url],
+              }],
+            });
+            
+            console.log('Successfully added and switched to Seismic network');
+            
+            // После добавления проверяем сеть
+            setTimeout(async () => {
+              await checkNetwork(ethereumProvider);
+            }, 2000);
+            
+          } catch (addError) {
+            console.error('Error adding network:', addError);
+            throw new Error(`Failed to add Seismic network: ${addError.message}`);
+          }
+        } else {
+          throw switchError;
+        }
       }
-      
-      // Ждем немного и проверяем что сеть изменилась
-      setTimeout(async () => {
-        await checkNetwork(ethereumProvider);
-      }, 1000);
       
     } catch (error) {
       console.error('Error switching to Seismic:', error);
-      alert(`Failed to switch to Seismic network: ${error.message}\n\nPlease try manually adding Seismic network to your wallet:\nChain ID: 5124\nRPC URL: https://node-2.seismicdev.net/rpc`);
+      
+      if (!isAutomatic) {
+        alert(`Failed to switch to Seismic network: ${error.message}\n\nPlease try manually adding Seismic network to your wallet:\n\nNetwork Name: ${SEISMIC_NETWORK.name}\nChain ID: ${SEISMIC_NETWORK.id}\nRPC URL: ${SEISMIC_NETWORK.rpcUrls.default.http[0]}\nCurrency Symbol: ${SEISMIC_NETWORK.nativeCurrency.symbol}\nBlock Explorer: ${SEISMIC_NETWORK.blockExplorers.default.url}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -147,12 +185,21 @@ export default function Home() {
           const ethersProvider = new ethers.BrowserProvider(ethereumProvider);
           setProvider(ethersProvider);
           
-          // Проверяем сеть
+          // Проверяем сеть и автоматически переключаемся на Seismic
           await checkNetwork(ethereumProvider);
           
           // Слушаем изменения сети
           ethereumProvider.on('chainChanged', () => {
+            console.log('Network changed, rechecking...');
             checkNetwork(ethereumProvider);
+          });
+          
+          // Слушаем изменения аккаунтов
+          ethereumProvider.on('accountsChanged', () => {
+            console.log('Accounts changed, updating balance...');
+            if (user?.wallet?.address) {
+              updateBalance(user.wallet.address, ethersProvider);
+            }
           });
           
           if (user?.wallet?.address) {
@@ -164,6 +211,12 @@ export default function Home() {
       };
       
       initializeWallet();
+    } else {
+      // Сбрасываем состояние при отключении кошелька
+      setNetworkSwitchAttempted(false);
+      setProvider(null);
+      setCurrentNetwork(null);
+      setIsCorrectNetwork(false);
     }
   }, [authenticated, wallets, user]);
 
@@ -418,9 +471,43 @@ Block Explorer: https://explorer-2.seismicdev.net/
             <div className="welcome-card">
               <h2>Welcome to Seismic Transaction Sender</h2>
               <p>Connect your wallet to start sending transactions on the Seismic blockchain network.</p>
+              
+              <div className="welcome-info">
+                <div className="network-info-box">
+                  <h4>🌐 Seismic Network Details</h4>
+                  <div className="network-details">
+                    <div><strong>Network:</strong> Seismic Devnet</div>
+                    <div><strong>Chain ID:</strong> 5124</div>
+                    <div><strong>Currency:</strong> SETH</div>
+                  </div>
+                </div>
+                
+                <div className="resources-info-box">
+                  <h4>🔗 Useful Resources</h4>
+                  <div className="resource-links-welcome">
+                    <a href={SEISMIC_LINKS.faucet} target="_blank" rel="noopener noreferrer" className="resource-link">
+                      🚰 Get Test Tokens
+                    </a>
+                    <a href={SEISMIC_LINKS.docs} target="_blank" rel="noopener noreferrer" className="resource-link">
+                      📚 Documentation
+                    </a>
+                    <a href={SEISMIC_LINKS.explorer} target="_blank" rel="noopener noreferrer" className="resource-link">
+                      🔍 Explorer
+                    </a>
+                  </div>
+                </div>
+              </div>
+              
               <button className="btn btn-primary btn-large" onClick={login}>
                 Connect Wallet
               </button>
+              
+              <div className="welcome-note">
+                <small>
+                  💡 After connecting, the app will automatically switch your wallet to Seismic network.
+                  If you need test tokens, use the faucet link above.
+                </small>
+              </div>
             </div>
           </div>
         ) : (
@@ -440,13 +527,91 @@ Block Explorer: https://explorer-2.seismicdev.net/
                     </div>
                   </div>
                   <div className="info-item">
-                    <label>Balance (ETH)</label>
+                    <label>Balance (SETH)</label>
                     <div className="info-value balance-display">
                       {balance}
                       <button className="refresh-btn" onClick={() => user?.wallet?.address && updateBalance(user.wallet.address)}>
                         🔄
                       </button>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Seismic Network Info */}
+              <div className="card seismic-info-card">
+                <h3 className="card-title">⚡ Seismic Network Resources</h3>
+                <div className="seismic-resources">
+                  <div className="resource-section">
+                    <div className="network-status-detailed">
+                      <div className="status-row">
+                        <span className="status-label">Network:</span>
+                        <span className={`status-value ${isCorrectNetwork ? 'connected' : 'disconnected'}`}>
+                          {isCorrectNetwork ? 'Seismic Devnet ✅' : (currentNetwork?.name || 'Not Connected ❌')}
+                        </span>
+                      </div>
+                      <div className="status-row">
+                        <span className="status-label">Chain ID:</span>
+                        <span className="status-value">{SEISMIC_NETWORK.id}</span>
+                      </div>
+                      <div className="status-row">
+                        <span className="status-label">Currency:</span>
+                        <span className="status-value">{SEISMIC_NETWORK.nativeCurrency.symbol}</span>
+                      </div>
+                    </div>
+                    
+                    {balance === '0.0' && isCorrectNetwork && (
+                      <div className="low-balance-warning">
+                        💡 <strong>Need test tokens?</strong> Get free SETH from the faucet below!
+                      </div>
+                    )}
+                    
+                    <div className="resource-links">
+                      <a 
+                        href={SEISMIC_LINKS.faucet} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="btn btn-success btn-sm resource-btn"
+                      >
+                        🚰 Get Test Tokens (Faucet)
+                      </a>
+                      <a 
+                        href={SEISMIC_LINKS.explorer} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="btn btn-info btn-sm resource-btn"
+                      >
+                        🔍 Block Explorer
+                      </a>
+                      <a 
+                        href={SEISMIC_LINKS.docs} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="btn btn-outline-primary btn-sm resource-btn"
+                      >
+                        📚 Documentation
+                      </a>
+                      <a 
+                        href={SEISMIC_LINKS.devnet} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="btn btn-outline-secondary btn-sm resource-btn"
+                      >
+                        🛠 Devnet Guide
+                      </a>
+                    </div>
+                    
+                    {!isCorrectNetwork && (
+                      <div className="network-action">
+                        <button 
+                          className="btn btn-warning btn-block"
+                          onClick={() => switchToSeismic(false)}
+                          disabled={loading}
+                        >
+                          {loading ? 'Switching to Seismic...' : '🔄 Switch to Seismic Network'}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
