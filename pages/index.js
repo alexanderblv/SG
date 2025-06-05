@@ -77,6 +77,34 @@ export default function Home() {
   const [contractAddress, setContractAddress] = useState('');
   const [encryptedResult, setEncryptedResult] = useState(null);
 
+  // Notification system
+  const [notifications, setNotifications] = useState([]);
+
+  // Add notification function
+  const addNotification = (message, type = 'info') => {
+    const id = Date.now();
+    const notification = {
+      id,
+      message,
+      type, // 'success', 'error', 'warning', 'info'
+      timestamp: new Date().toLocaleString()
+    };
+    
+    setNotifications(prev => [notification, ...prev.slice(0, 4)]); // Keep only last 5 notifications
+    
+    // Auto remove after 5 seconds for non-error messages
+    if (type !== 'error') {
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 5000);
+    }
+  };
+
+  // Remove notification function
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
   const encryptedTypes = [
     { value: 'suint8', label: 'suint8 - Encrypted 8-bit Integer' },
     { value: 'suint16', label: 'suint16 - Encrypted 16-bit Integer' },
@@ -254,7 +282,7 @@ export default function Home() {
       console.error('Error switching to Seismic:', error);
       
       if (!isAutomatic) {
-        console.error(`Failed to switch to Seismic network: ${error.message}\n\nPlease try manually adding Seismic network to your wallet:\n\nNetwork Name: ${SEISMIC_NETWORK.name}\nChain ID: ${SEISMIC_NETWORK.id}\nRPC URL: ${SEISMIC_NETWORK.rpcUrls.default.http[0]}\nCurrency Symbol: ${SEISMIC_NETWORK.nativeCurrency.symbol}\nBlock Explorer: ${SEISMIC_NETWORK.blockExplorers.default.url}`);
+        addNotification(`Failed to switch to Seismic network: ${error.message}. Please try manually adding Seismic network to your wallet.`, 'error');
       }
     } finally {
       setLoading(false);
@@ -321,13 +349,13 @@ export default function Home() {
 
   const handleSendTransaction = async () => {
     if (!provider || !recipientAddress || !amount) {
-      console.warn('Please fill in all fields and connect wallet');
+      addNotification('Please fill in all fields and connect wallet', 'warning');
       return;
     }
 
     // Проверяем что пользователь на правильной сети
     if (!isCorrectNetwork) {
-      console.warn('Please switch to Seismic network before sending transactions!');
+      addNotification('Please switch to Seismic network before sending transactions!', 'warning');
       return;
     }
 
@@ -335,13 +363,13 @@ export default function Home() {
     if (recipientAddress.toLowerCase() === user?.wallet?.address?.toLowerCase()) {
       const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
       setRecipientAddress(testAddress);
-      console.log(`Test address set: ${testAddress}\n\nYou can now send a small amount like 0.001 SETH for testing.`);
+      addNotification(`Test address set: ${testAddress}. You can now send a small amount like 0.001 SETH for testing.`, 'info');
       return;
     }
 
     // Проверяем валидность адреса
     if (!/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)) {
-      console.error('Please enter a valid Ethereum address (starts with 0x and is 42 characters long)');
+      addNotification('Please enter a valid Ethereum address (starts with 0x and is 42 characters long)', 'error');
       return;
     }
 
@@ -350,16 +378,14 @@ export default function Home() {
     const sendAmount = parseFloat(amount);
     
     if (currentBalance === 0) {
-      console.log('Balance is 0 SETH. Opening faucet to get test tokens...');
+      addNotification('Balance is 0 SETH. You need test tokens to send transactions. Use the faucet to get free tokens.', 'warning');
       return;
     }
     
     if (sendAmount > currentBalance) {
-      console.error(
-        `Insufficient balance!\n\n` +
-        `You're trying to send: ${sendAmount} SETH\n` +
-        `Your current balance: ${currentBalance} SETH\n\n` +
-        `Please reduce the amount or get more tokens from the faucet.`
+      addNotification(
+        `Insufficient balance! You're trying to send: ${sendAmount} SETH, but your current balance is: ${currentBalance} SETH. Please reduce the amount or get more tokens from the faucet.`, 
+        'error'
       );
       return;
     }
@@ -367,10 +393,9 @@ export default function Home() {
     // Проверяем что остается достаточно на газ (примерно 0.001 SETH)
     const estimatedGas = 0.001;
     if (sendAmount + estimatedGas > currentBalance) {
-      console.error(
-        `Please leave some SETH for gas fees!\n\n` +
-        `Recommended max amount: ${(currentBalance - estimatedGas).toFixed(6)} SETH\n` +
-        `(${estimatedGas} SETH reserved for gas)`
+      addNotification(
+        `Please leave some SETH for gas fees! Recommended max amount: ${(currentBalance - estimatedGas).toFixed(6)} SETH (${estimatedGas} SETH reserved for gas)`, 
+        'warning'
       );
       return;
     }
@@ -393,7 +418,7 @@ export default function Home() {
         console.error('Gas estimation failed:', gasError);
         
         if (gasError.message.includes('insufficient funds')) {
-          console.log('Insufficient funds for transaction! Opening faucet...');
+          addNotification('Insufficient funds for transaction! You need more SETH tokens. Use the faucet to get free test tokens.', 'error');
           return;
         }
         
@@ -414,7 +439,7 @@ export default function Home() {
       
       setTransactions(prev => [newTx, ...prev]);
       
-      console.log(`Transaction sent successfully on Seismic!\nHash: ${txResponse.hash}`);
+      addNotification(`Transaction sent successfully on Seismic! Hash: ${txResponse.hash}`, 'success');
       
       // Очистить форму
       setRecipientAddress('');
@@ -429,16 +454,16 @@ export default function Home() {
       let errorMessage = 'Transaction failed: ';
       
       if (error.message.includes('insufficient funds')) {
-        errorMessage = `Insufficient funds!\n\nYou need more SETH tokens to complete this transaction.\nClick the "🎁 Get Test Tokens" button to get free tokens from the faucet.`;
+        errorMessage = `Insufficient funds! You need more SETH tokens to complete this transaction. Click the "🎁 Get Test Tokens" button to get free tokens from the faucet.`;
       } else if (error.message.includes('user rejected')) {
         errorMessage = 'Transaction was cancelled by user.';
       } else if (error.message.includes('network')) {
-        errorMessage = `Network error: ${error.message}\n\nPlease check your connection to Seismic network.`;
+        errorMessage = `Network error: ${error.message}. Please check your connection to Seismic network.`;
       } else {
         errorMessage += error.message;
       }
       
-      console.error(errorMessage);
+      addNotification(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -446,7 +471,7 @@ export default function Home() {
 
   const handleEncryptData = async () => {
     if (!selectedEncryptedType || !contractAddress) {
-      console.warn('Please select encrypted type and enter contract address');
+      addNotification('Please select encrypted type and enter contract address', 'warning');
       return;
     }
 
@@ -463,11 +488,11 @@ export default function Home() {
       };
       
       setEncryptedResult(mockEncryptedData);
-      console.log(`Data encrypted successfully using ${selectedEncryptedType} on Seismic!`);
+      addNotification(`Data encrypted successfully using ${selectedEncryptedType} on Seismic!`, 'success');
       
     } catch (error) {
       console.error('Encryption error:', error);
-      console.error('Encryption failed: ' + error.message);
+      addNotification('Encryption failed: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -475,13 +500,13 @@ export default function Home() {
 
   const handleSendEncryptedTransaction = async () => {
     if (!provider || !contractAddress || !selectedEncryptedType) {
-      console.warn('Please complete encryption first and connect wallet');
+      addNotification('Please complete encryption first and connect wallet', 'warning');
       return;
     }
 
     // Проверяем что пользователь на правильной сети
     if (!isCorrectNetwork) {
-      console.warn('Please switch to Seismic network before sending encrypted transactions!');
+      addNotification('Please switch to Seismic network before sending encrypted transactions!', 'warning');
       return;
     }
 
@@ -512,7 +537,7 @@ export default function Home() {
       
       setTransactions(prev => [newTx, ...prev]);
       
-      console.log(`Encrypted transaction sent successfully on Seismic!\nHash: ${txResponse.hash}\nType: ${selectedEncryptedType}`);
+      addNotification(`Encrypted transaction sent successfully on Seismic! Hash: ${txResponse.hash}, Type: ${selectedEncryptedType}`, 'success');
       
       // Очистить форму
       setSelectedEncryptedType('');
@@ -521,7 +546,7 @@ export default function Home() {
       
     } catch (error) {
       console.error('Encrypted transaction error:', error);
-      console.error('Encrypted transaction failed: ' + error.message);
+      addNotification('Encrypted transaction failed: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -579,8 +604,8 @@ export default function Home() {
                   <button 
                     className="btn btn-info btn-sm" 
                     onClick={() => {
-                      console.log(`Manual Network Setup Instructions:
-                      
+                      addNotification(`Manual Network Setup Instructions:
+
 1. Open your wallet (MetaMask, etc.)
 2. Go to Settings > Networks > Add Network
 3. Enter the following details:
@@ -591,7 +616,7 @@ RPC URL: https://node-2.seismicdev.net/rpc
 Currency Symbol: SETH
 Block Explorer: https://explorer-2.seismicdev.net/
 
-4. Save and switch to this network`);
+4. Save and switch to this network`, 'info');
                     }}
                   >
                     Manual Setup
@@ -614,6 +639,39 @@ Block Explorer: https://explorer-2.seismicdev.net/
           </div>
         </div>
       </header>
+
+      {/* Notification System */}
+      {notifications.length > 0 && (
+        <div className="notifications-container">
+          {notifications.map((notification) => (
+            <div 
+              key={notification.id} 
+              className={`notification notification-${notification.type}`}
+            >
+              <div className="notification-content">
+                <div className="notification-icon">
+                  {notification.type === 'success' && '✅'}
+                  {notification.type === 'error' && '❌'}
+                  {notification.type === 'warning' && '⚠️'}
+                  {notification.type === 'info' && 'ℹ️'}
+                </div>
+                <div className="notification-message">
+                  {notification.message}
+                </div>
+                <button 
+                  className="notification-close"
+                  onClick={() => removeNotification(notification.id)}
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="notification-time">
+                {notification.timestamp}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <main className="main-content">
         {!authenticated ? (
