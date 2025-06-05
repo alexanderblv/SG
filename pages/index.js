@@ -79,6 +79,7 @@ export default function Home() {
 
   // Notification system
   const [notifications, setNotifications] = useState([]);
+  const [notificationTimers, setNotificationTimers] = useState(new Map());
 
   // Add notification function
   const addNotification = (message, type = 'info') => {
@@ -92,17 +93,58 @@ export default function Home() {
     
     setNotifications(prev => [notification, ...prev.slice(0, 4)]); // Keep only last 5 notifications
     
-    // Auto remove after 5 seconds for non-error messages
-    if (type !== 'error') {
-      setTimeout(() => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-      }, 5000);
-    }
+    // Auto remove after specified time - longer for errors
+    const autoCloseTime = type === 'error' ? 10000 : 5000; // 10 seconds for errors, 5 for others
+    const timer = setTimeout(() => {
+      removeNotification(id);
+    }, autoCloseTime);
+    
+    // Store timer to allow pausing
+    setNotificationTimers(prev => new Map(prev).set(id, timer));
   };
 
   // Remove notification function
   const removeNotification = (id) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
+    // Clear timer if exists
+    const timer = notificationTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+      setNotificationTimers(prev => {
+        const newMap = new Map(prev);
+        newMap.delete(id);
+        return newMap;
+      });
+    }
+    
+    // Add closing animation class
+    const notificationElement = document.querySelector(`[data-notification-id="${id}"]`);
+    if (notificationElement) {
+      notificationElement.classList.add('notification-closing');
+      // Remove from state after animation completes
+      setTimeout(() => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
+      }, 300);
+    } else {
+      // Fallback if element not found
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }
+  };
+
+  // Pause/resume notification auto-close
+  const pauseNotification = (id) => {
+    const timer = notificationTimers.get(id);
+    if (timer) {
+      clearTimeout(timer);
+    }
+  };
+
+  const resumeNotification = (id, type) => {
+    const autoCloseTime = type === 'error' ? 10000 : 5000;
+    const timer = setTimeout(() => {
+      removeNotification(id);
+    }, autoCloseTime);
+    
+    setNotificationTimers(prev => new Map(prev).set(id, timer));
   };
 
   const encryptedTypes = [
@@ -646,7 +688,10 @@ Block Explorer: https://explorer-2.seismicdev.net/
           {notifications.map((notification) => (
             <div 
               key={notification.id} 
+              data-notification-id={notification.id}
               className={`notification notification-${notification.type}`}
+              onMouseEnter={() => pauseNotification(notification.id)}
+              onMouseLeave={() => resumeNotification(notification.id, notification.type)}
             >
               <div className="notification-content">
                 <div className="notification-icon">
