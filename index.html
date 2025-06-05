@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seismic Transaction Sender</title>
-    <meta name="description" content="Seismic Transaction Sender - Send transactions with privacy features">
+    <title>Seismic Game - Wallet Connection</title>
+    <meta name="description" content="Seismic Game - Modern blockchain application with Privy wallet integration">
     
     <!-- Preconnect for better performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,19 +19,30 @@
     <!-- Custom Styles -->
     <link rel="stylesheet" href="style.css">
     
-    <!-- React and Babel -->
+    <!-- React and ReactDOM from CDN -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Privy React Auth SDK -->
+    <script crossorigin src="https://unpkg.com/@privy-io/react-auth@2.13.8/dist/index.umd.js"></script>
     
     <!-- Ethers.js -->
     <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.1/dist/ethers.umd.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
     <div id="root"></div>
     
     <script type="text/babel">
         const { useState, useEffect, useCallback } = React;
+        
+        // Accessing Privy from global scope
+        const { PrivyProvider, usePrivy, useWallets } = window.PrivyReactAuth;
+
+        // Privy App Configuration
+        const PRIVY_APP_ID = 'cmbhhu8sr00mojr0l66siei2z';
 
         // Seismic Network Configuration
         const seismicNetwork = {
@@ -56,66 +67,252 @@
             testnet: true,
         };
 
-        // Main App Component
-        const SeismicTransactionSender = () => {
-            const [isConnected, setIsConnected] = useState(false);
-            const [walletAddress, setWalletAddress] = useState('');
-            const [balance, setBalance] = useState('0.0');
+        // Privy Configuration
+        const privyConfig = {
+            appearance: {
+                accentColor: '#6A6FF5',
+                theme: 'light',
+                showWalletLoginFirst: true,
+                logo: 'https://docs.privy.io/img/logo.svg',
+                walletChainType: 'ethereum-only',
+            },
+            loginMethods: ['wallet', 'email'],
+            embeddedWallets: {
+                createOnLogin: 'users-without-wallets',
+                requireUserPasswordOnCreate: false,
+                showWalletUIs: true,
+            },
+            defaultChain: seismicNetwork,
+            supportedChains: [seismicNetwork],
+            externalWallets: {
+                metamask: true,
+                coinbaseWallet: true,
+                walletConnect: true,
+                rainbow: true,
+                injected: true,
+            },
+        };
+
+        // User Info Component
+        const UserInfo = ({ user, balance, networkInfo }) => (
+            <div className="card fade-in">
+                <h3 className="card-title">👤 User Information</h3>
+                <div className="info-section">
+                    <div className="info-item">
+                        <label>Email</label>
+                        <div className="info-value">{user?.email?.address || 'Not specified'}</div>
+                    </div>
+                    <div className="info-item">
+                        <label>Wallet Address</label>
+                        <div className="info-value">
+                            {user?.wallet?.address ? 
+                                `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}` : 
+                                'Not connected'
+                            }
+                        </div>
+                    </div>
+                    <div className="info-item">
+                        <label>Balance</label>
+                        <div className="info-value">{balance} SETH</div>
+                    </div>
+                    <div className="info-item">
+                        <label>Network</label>
+                        <div className="info-value status-connected">{networkInfo?.name || 'Seismic Devnet'}</div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        // Transaction Form Component
+        const TransactionForm = ({ onSendTransaction, loading, isConnected }) => {
             const [recipientAddress, setRecipientAddress] = useState('');
             const [amount, setAmount] = useState('');
             const [enableEncryption, setEnableEncryption] = useState(false);
-            const [selectedEncryptedType, setSelectedEncryptedType] = useState('');
-            const [contractAddress, setContractAddress] = useState('');
-            const [transactions, setTransactions] = useState([]);
-            const [loading, setLoading] = useState(false);
 
-            const encryptedTypes = [
-                'Choose type...',
-                'suint',
-                'seint',
-                'sbool',
-                'saddress'
-            ];
-
-            const handleConnectWallet = () => {
-                // Demo wallet connection
-                setIsConnected(true);
-                setWalletAddress('0x742d35Cc6635C0532925a3b8D3Ac27FAACE6547');
-                setBalance('1.234');
-            };
-
-            const handleAddNetwork = () => {
-                alert('Add Network functionality would be implemented here');
-            };
-
-            const handleSendTransaction = async () => {
+            const handleSubmit = () => {
                 if (!recipientAddress || !amount) {
                     alert('Please fill in recipient address and amount');
                     return;
                 }
+                onSendTransaction(recipientAddress, amount, enableEncryption);
+                setRecipientAddress('');
+                setAmount('');
+                setEnableEncryption(false);
+            };
 
-                setLoading(true);
+            return (
+                <div className="card">
+                    <h3 className="card-title">📤 Send Transaction</h3>
+                    <div className="form-section">
+                        <div className="form-group">
+                            <label>Recipient Address</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="0x..."
+                                value={recipientAddress}
+                                onChange={(e) => setRecipientAddress(e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Amount (SETH)</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                placeholder="0.0"
+                                step="0.001"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group">
+                            <div className="form-check">
+                                <input
+                                    type="checkbox"
+                                    className="form-check-input"
+                                    checked={enableEncryption}
+                                    onChange={(e) => setEnableEncryption(e.target.checked)}
+                                />
+                                <label className="form-check-label">
+                                    ✅ Enable Seismic Encryption
+                                </label>
+                            </div>
+                        </div>
+                        <button 
+                            className="btn btn-primary btn-block"
+                            onClick={handleSubmit}
+                            disabled={loading || !isConnected}
+                        >
+                            {loading ? 'Sending...' : '📤 Send Transaction'}
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // Transaction History Component
+        const TransactionHistory = ({ transactions, onClear }) => (
+            <div className="card">
+                <div className="card-header">
+                    <h3 className="card-title">📋 Transaction History</h3>
+                    {transactions.length > 0 && (
+                        <button className="btn btn-outline-danger btn-sm" onClick={onClear}>
+                            🗑 Clear
+                        </button>
+                    )}
+                </div>
+                <div className="transaction-history">
+                    {transactions.length === 0 ? (
+                        <div className="empty-state">
+                            <div className="empty-icon">ℹ️</div>
+                            <p>No transactions yet. Send your first transaction to see it here.</p>
+                        </div>
+                    ) : (
+                        <div className="transaction-list">
+                            {transactions.map((tx, index) => (
+                                <div key={index} className="transaction-item">
+                                    <div className="transaction-header">
+                                        <span className="transaction-type">
+                                            {tx.encrypted ? '🔐' : '💸'} 
+                                            {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                                        </span>
+                                        <span className={`transaction-status status-${tx.status}`}>
+                                            {tx.status}
+                                        </span>
+                                    </div>
+                                    <div className="transaction-details">
+                                        <small>To: {tx.to?.slice(0, 10)}...</small>
+                                        <small>Amount: {tx.value} SETH</small>
+                                        <small>{tx.timestamp}</small>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
+
+        // Main App Component
+        const SeismicApp = () => {
+            const { ready, authenticated, user, login, logout } = usePrivy();
+            const { wallets } = useWallets();
+            
+            const [loading, setLoading] = useState(false);
+            const [balance, setBalance] = useState('0.0');
+            const [networkInfo, setNetworkInfo] = useState(null);
+            const [transactions, setTransactions] = useState([]);
+            const [provider, setProvider] = useState(null);
+
+            // Initialize wallet provider when wallet is connected
+            useEffect(() => {
+                if (authenticated && wallets.length > 0) {
+                    const walletProvider = wallets[0]?.getEthersProvider();
+                    setProvider(walletProvider);
+                    if (user?.wallet?.address) {
+                        updateBalance(user.wallet.address, walletProvider);
+                    }
+                }
+            }, [authenticated, wallets, user]);
+
+            const updateBalance = async (address, walletProvider) => {
                 try {
-                    // Simulate transaction
-                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    const ethersProvider = walletProvider || provider;
+                    if (ethersProvider) {
+                        const balance = await ethersProvider.getBalance(address);
+                        const balanceInEth = ethers.formatEther(balance);
+                        setBalance(parseFloat(balanceInEth).toFixed(4));
+                    }
+                } catch (error) {
+                    console.error('Error getting balance:', error);
+                    setBalance('0.0');
+                }
+            };
+
+            const handleSendTransaction = async (to, value, encrypted) => {
+                if (!provider) {
+                    alert('Wallet not connected');
+                    return;
+                }
+
+                try {
+                    setLoading(true);
+                    
+                    const signer = await provider.getSigner();
+                    const transaction = {
+                        to: to,
+                        value: ethers.parseEther(value)
+                    };
+
+                    const txResponse = await signer.sendTransaction(transaction);
                     
                     const newTx = {
-                        hash: '0x' + Math.random().toString(16).substr(2, 64),
-                        to: recipientAddress,
-                        value: amount,
+                        hash: txResponse.hash,
+                        to: to,
+                        value: value,
                         timestamp: new Date().toLocaleString(),
-                        status: 'success',
-                        encrypted: enableEncryption
+                        status: 'pending',
+                        encrypted: encrypted
                     };
                     
                     setTransactions(prev => [newTx, ...prev]);
                     
-                    // Clear form
-                    setRecipientAddress('');
-                    setAmount('');
-                    setEnableEncryption(false);
+                    alert(`Transaction sent successfully!\nHash: ${txResponse.hash}`);
                     
-                    alert(`Transaction sent successfully!\nHash: ${newTx.hash}`);
+                    // Wait for confirmation and update status
+                    txResponse.wait().then(() => {
+                        setTransactions(prev => 
+                            prev.map(tx => 
+                                tx.hash === txResponse.hash 
+                                    ? { ...tx, status: 'success' }
+                                    : tx
+                            )
+                        );
+                        // Update balance
+                        if (user?.wallet?.address) {
+                            updateBalance(user.wallet.address);
+                        }
+                    });
                     
                 } catch (error) {
                     console.error('Transaction error:', error);
@@ -125,244 +322,138 @@
                 }
             };
 
-            const handleEncryptData = async () => {
-                if (!selectedEncryptedType || selectedEncryptedType === 'Choose type...' || !contractAddress) {
-                    alert('Please select encrypted type and contract address');
-                    return;
-                }
-
-                setLoading(true);
-                try {
-                    // Simulate encryption
-                    await new Promise(resolve => setTimeout(resolve, 1500));
-                    
-                    const newTx = {
-                        hash: '0x' + Math.random().toString(16).substr(2, 64),
-                        type: 'encrypted',
-                        encryptedType: selectedEncryptedType,
-                        contractAddress: contractAddress,
-                        timestamp: new Date().toLocaleString(),
-                        status: 'success'
-                    };
-                    
-                    setTransactions(prev => [newTx, ...prev]);
-                    
-                    alert(`Encrypted transaction sent!\nType: ${selectedEncryptedType}\nHash: ${newTx.hash}`);
-                    
-                } catch (error) {
-                    console.error('Encryption error:', error);
-                    alert('Encryption failed: ' + error.message);
-                } finally {
-                    setLoading(false);
-                }
-            };
-
             const clearHistory = () => {
                 setTransactions([]);
             };
+
+            if (!ready) {
+                return (
+                    <div className="app-container">
+                        <div className="main-content">
+                            <div className="card text-center">
+                                <div className="loading" style={{margin: '0 auto'}}></div>
+                                <p className="mt-2">Loading Seismic Game...</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
                 <div className="app-container">
                     {/* Header */}
                     <header className="header">
                         <div className="header-content">
-                            <h1 className="app-title">Seismic Transaction Sender</h1>
+                            <h1 className="app-title">Seismic Game - Wallet Connection</h1>
                             <div className="header-controls">
-                                <span className="network-status">Seismic devnet</span>
-                                <span className={`connection-status ${isConnected ? 'connected' : 'disconnected'}`}>
-                                    {isConnected ? 'Connected' : 'Disconnected'}
+                                <span className="network-status">Seismic Devnet</span>
+                                <span className={`connection-status ${authenticated ? 'connected' : 'disconnected'}`}>
+                                    {authenticated ? 'Connected' : 'Disconnected'}
                                 </span>
-                                {!isConnected && (
-                                    <button className="btn btn-primary btn-sm" onClick={handleConnectWallet}>
-                                        Connect Wallet
+                                {authenticated ? (
+                                    <button className="btn btn-danger btn-sm" onClick={logout}>
+                                        🚪 Logout
+                                    </button>
+                                ) : (
+                                    <button className="btn btn-primary btn-sm" onClick={login}>
+                                        🔗 Connect Wallet
                                     </button>
                                 )}
-                                <button className="btn btn-success btn-sm" onClick={handleAddNetwork}>
-                                    Add Network
-                                </button>
+                                <a href="https://faucet-2.seismicdev.net/" target="_blank" className="btn btn-success btn-sm">
+                                    🚰 Get Tokens
+                                </a>
                             </div>
                         </div>
                     </header>
 
                     {/* Main Content */}
                     <main className="main-content">
-                        <div className="content-grid">
-                            {/* Left Column */}
-                            <div className="left-column">
-                                {/* Wallet Information */}
-                                <div className="card">
-                                    <h3 className="card-title">💼 Wallet Information</h3>
-                                    <div className="info-section">
-                                        <div className="info-item">
-                                            <label>Your Address</label>
-                                            <div className="info-value">
-                                                {isConnected ? walletAddress : 'Connect wallet to see address'}
+                        {!authenticated ? (
+                            // Login screen
+                            <div className="card text-center">
+                                <h1>🌊 Welcome to Seismic Game</h1>
+                                <p className="mb-3">
+                                    Modern blockchain application with wallet integration 
+                                    and support for encrypted transactions on Seismic Devnet.
+                                </p>
+                                <button className="btn btn-primary btn-lg" onClick={login}>
+                                    🚀 Connect Wallet and Start
+                                </button>
+                                <div className="mt-3">
+                                    <small>Supports MetaMask, WalletConnect, and email login</small>
+                                </div>
+                                <div className="mt-3">
+                                    <p className="text-muted">
+                                        <strong>Privy App ID:</strong> {PRIVY_APP_ID}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : (
+                            // Main interface
+                            <div className="content-grid">
+                                <div className="left-column">
+                                    <UserInfo user={user} balance={balance} networkInfo={networkInfo} />
+                                    <TransactionForm 
+                                        onSendTransaction={handleSendTransaction}
+                                        loading={loading}
+                                        isConnected={authenticated}
+                                    />
+                                </div>
+                                <div className="right-column">
+                                    <TransactionHistory 
+                                        transactions={transactions}
+                                        onClear={clearHistory}
+                                    />
+                                    
+                                    {/* Network Info */}
+                                    <div className="card">
+                                        <h3 className="card-title">🌐 Network Information</h3>
+                                        <div className="info-section">
+                                            <div className="info-item">
+                                                <label>Chain ID</label>
+                                                <div className="info-value">5124</div>
+                                            </div>
+                                            <div className="info-item">
+                                                <label>Network</label>
+                                                <div className="info-value">Seismic Devnet</div>
+                                            </div>
+                                            <div className="info-item">
+                                                <label>RPC URL</label>
+                                                <div className="info-value">https://node-2.seismicdev.net/rpc</div>
                                             </div>
                                         </div>
-                                        <div className="info-item">
-                                            <label>Balance (ETH)</label>
-                                            <div className="info-value">{balance}</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Send Transaction */}
-                                <div className="card">
-                                    <h3 className="card-title">📤 Send Transaction</h3>
-                                    <div className="form-section">
-                                        <div className="form-group">
-                                            <label>Recipient Address</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="0x..."
-                                                value={recipientAddress}
-                                                onChange={(e) => setRecipientAddress(e.target.value)}
-                                            />
-                                            <small className="form-text">Enter the recipient's Ethereum address</small>
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Amount (ETH)</label>
-                                            <input
-                                                type="number"
-                                                className="form-control"
-                                                placeholder="0.0"
-                                                step="0.001"
-                                                value={amount}
-                                                onChange={(e) => setAmount(e.target.value)}
-                                            />
-                                            <small className="form-text">Amount to send in ETH</small>
-                                        </div>
-                                        <div className="form-group">
-                                            <div className="form-check">
-                                                <input
-                                                    type="checkbox"
-                                                    className="form-check-input"
-                                                    checked={enableEncryption}
-                                                    onChange={(e) => setEnableEncryption(e.target.checked)}
-                                                />
-                                                <label className="form-check-label">
-                                                    ✅ Enable Seismic Encryption
-                                                </label>
-                                            </div>
-                                            <small className="form-text">Use Seismic's privacy features for this transaction</small>
-                                        </div>
-                                        <button 
-                                            className="btn btn-primary btn-block"
-                                            onClick={handleSendTransaction}
-                                            disabled={loading || !isConnected}
-                                        >
-                                            {loading ? 'Sending...' : '📤 Send Transaction'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Encrypted Types Demo */}
-                                <div className="card">
-                                    <h3 className="card-title">🔐 Encrypted Types Demo</h3>
-                                    <div className="form-section">
-                                        <div className="form-group">
-                                            <label>Select Encrypted Type</label>
-                                            <select
-                                                className="form-control"
-                                                value={selectedEncryptedType}
-                                                onChange={(e) => setSelectedEncryptedType(e.target.value)}
-                                            >
-                                                {encryptedTypes.map((type, index) => (
-                                                    <option key={index} value={type}>{type}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Contract Address</label>
-                                            <input
-                                                type="text"
-                                                className="form-control"
-                                                placeholder="0x... (contract address for encrypted transaction)"
-                                                value={contractAddress}
-                                                onChange={(e) => setContractAddress(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="encrypted-actions">
-                                            <button 
-                                                className="btn btn-info btn-block mb-2"
-                                                disabled={loading}
-                                            >
-                                                🔐 Encrypt Data
-                                            </button>
-                                            <button 
-                                                className="btn btn-success btn-block"
-                                                onClick={handleEncryptData}
-                                                disabled={loading || !isConnected}
-                                            >
-                                                {loading ? 'Sending...' : '📤 Send Encrypted Transaction'}
-                                            </button>
+                                        <div className="text-center mt-3">
+                                            <a href="https://explorer-2.seismicdev.net/" target="_blank" className="btn btn-secondary btn-sm">
+                                                🔍 Open Explorer
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Right Column */}
-                            <div className="right-column">
-                                {/* Transaction History */}
-                                <div className="card">
-                                    <div className="card-header">
-                                        <h3 className="card-title">📋 Transaction History</h3>
-                                        {transactions.length > 0 && (
-                                            <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
-                                                🗑 Clear
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="transaction-history">
-                                        {transactions.length === 0 ? (
-                                            <div className="empty-state">
-                                                <div className="empty-icon">ℹ️</div>
-                                                <p>No transactions yet. Send your first transaction to see it here.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="transaction-list">
-                                                {transactions.map((tx, index) => (
-                                                    <div key={index} className="transaction-item">
-                                                        <div className="transaction-header">
-                                                            <span className="transaction-type">
-                                                                {tx.type === 'encrypted' ? '🔐' : '💸'} 
-                                                                {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
-                                                            </span>
-                                                            <span className={`transaction-status status-${tx.status}`}>
-                                                                {tx.status}
-                                                            </span>
-                                                        </div>
-                                                        <div className="transaction-details">
-                                                            {tx.type === 'encrypted' ? (
-                                                                <>
-                                                                    <small>Type: {tx.encryptedType}</small>
-                                                                    <small>Contract: {tx.contractAddress?.slice(0, 10)}...</small>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <small>To: {tx.to?.slice(0, 10)}...</small>
-                                                                    <small>Amount: {tx.value} ETH</small>
-                                                                </>
-                                                            )}
-                                                            <small>{tx.timestamp}</small>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </main>
+
+                    {/* Footer */}
+                    <footer className="footer">
+                        <p>&copy; 2024 Seismic Game. Powered by Privy Auth SDK & Seismic Devnet</p>
+                    </footer>
                 </div>
             );
         };
 
+        // Root App Component with Privy Provider
+        const App = () => (
+            <PrivyProvider
+                appId={PRIVY_APP_ID}
+                config={privyConfig}
+            >
+                <SeismicApp />
+            </PrivyProvider>
+        );
+
         // Render the application
         try {
-            ReactDOM.render(React.createElement(SeismicTransactionSender), document.getElementById('root'));
+            ReactDOM.render(React.createElement(App), document.getElementById('root'));
         } catch (error) {
             console.error('Application render error:', error);
             document.getElementById('root').innerHTML = `
