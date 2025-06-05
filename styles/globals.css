@@ -50,6 +50,12 @@ body {
   gap: 1rem;
 }
 
+.network-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .network-status {
   color: #6c757d;
   font-weight: 500;
@@ -58,6 +64,19 @@ body {
   padding: 0.4rem 0.8rem;
   border-radius: 20px;
   border: 1px solid #dee2e6;
+  transition: all 0.3s ease;
+}
+
+.network-status.correct {
+  color: #10B981;
+  background: #d1fae5;
+  border: 1px solid #a7f3d0;
+}
+
+.network-status.incorrect {
+  color: #EF4444;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
 }
 
 .connection-status {
@@ -310,8 +329,11 @@ body {
 }
 
 .btn:disabled {
-  opacity: 0.6;
+  background: #6c757d;
+  border-color: #6c757d;
+  color: white;
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .btn-primary {
@@ -373,6 +395,17 @@ body {
 .btn-large {
   padding: 1rem 2rem;
   font-size: 1.1rem;
+}
+
+.btn-warning {
+  background: #f59e0b;
+  color: white;
+  border: 1px solid #f59e0b;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: #d97706;
+  border-color: #d97706;
 }
 
 /* Encrypted Actions */
@@ -608,4 +641,23 @@ body {
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.network-warning {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #fed7aa;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.form-control:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  border-color: #e9ecef;
+  cursor: not-allowed;
+  opacity: 0.6;
 } 

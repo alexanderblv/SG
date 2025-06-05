@@ -3,6 +3,29 @@ import { usePrivy, useWallets } from '@privy-io/react-auth';
 import { ethers } from 'ethers';
 import Head from 'next/head';
 
+// Seismic Network Configuration
+const SEISMIC_NETWORK = {
+  id: 5124,
+  name: 'Seismic Devnet',
+  network: 'seismic-devnet',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'Seismic ETH',
+    symbol: 'SETH',
+  },
+  rpcUrls: {
+    public: { http: ['https://node-2.seismicdev.net/rpc'] },
+    default: { http: ['https://node-2.seismicdev.net/rpc'] },
+  },
+  blockExplorers: {
+    default: { 
+      name: 'Seismic Explorer', 
+      url: 'https://explorer-2.seismicdev.net/' 
+    },
+  },
+  testnet: true,
+};
+
 export default function Home() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
@@ -11,6 +34,8 @@ export default function Home() {
   const [balance, setBalance] = useState('0.0');
   const [transactions, setTransactions] = useState([]);
   const [provider, setProvider] = useState(null);
+  const [currentNetwork, setCurrentNetwork] = useState(null);
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
   
   // Форма для отправки транзакций
   const [recipientAddress, setRecipientAddress] = useState('');
@@ -30,6 +55,63 @@ export default function Home() {
     { value: 'sbool', label: 'sbool - Encrypted Boolean' }
   ];
 
+  // Проверка текущей сети
+  const checkNetwork = async (ethereumProvider) => {
+    try {
+      const network = await ethereumProvider.request({ method: 'eth_chainId' });
+      const chainId = parseInt(network, 16);
+      setCurrentNetwork({ chainId, name: chainId === SEISMIC_NETWORK.id ? SEISMIC_NETWORK.name : 'Unknown Network' });
+      setIsCorrectNetwork(chainId === SEISMIC_NETWORK.id);
+      return chainId === SEISMIC_NETWORK.id;
+    } catch (error) {
+      console.error('Error checking network:', error);
+      return false;
+    }
+  };
+
+  // Переключение на Seismic сеть
+  const switchToSeismic = async () => {
+    if (!wallets.length) return;
+    
+    try {
+      setLoading(true);
+      const ethereumProvider = await wallets[0].getEthereumProvider();
+      
+      // Сначала пробуем переключиться на сеть
+      try {
+        await ethereumProvider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: `0x${SEISMIC_NETWORK.id.toString(16)}` }],
+        });
+      } catch (switchError) {
+        // Если сеть не добавлена, добавляем её
+        if (switchError.code === 4902) {
+          await ethereumProvider.request({
+            method: 'wallet_addEthereumChain',
+            params: [{
+              chainId: `0x${SEISMIC_NETWORK.id.toString(16)}`,
+              chainName: SEISMIC_NETWORK.name,
+              nativeCurrency: SEISMIC_NETWORK.nativeCurrency,
+              rpcUrls: [SEISMIC_NETWORK.rpcUrls.default.http[0]],
+              blockExplorerUrls: [SEISMIC_NETWORK.blockExplorers.default.url],
+            }],
+          });
+        } else {
+          throw switchError;
+        }
+      }
+      
+      // Проверяем что сеть изменилась
+      await checkNetwork(ethereumProvider);
+      
+    } catch (error) {
+      console.error('Error switching to Seismic:', error);
+      alert('Failed to switch to Seismic network: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Инициализация провайдера кошелька
   useEffect(() => {
     if (authenticated && wallets.length > 0) {
@@ -38,6 +120,14 @@ export default function Home() {
           const ethereumProvider = await wallets[0].getEthereumProvider();
           const ethersProvider = new ethers.BrowserProvider(ethereumProvider);
           setProvider(ethersProvider);
+          
+          // Проверяем сеть
+          await checkNetwork(ethereumProvider);
+          
+          // Слушаем изменения сети
+          ethereumProvider.on('chainChanged', () => {
+            checkNetwork(ethereumProvider);
+          });
           
           if (user?.wallet?.address) {
             updateBalance(user.wallet.address, ethersProvider);
@@ -71,6 +161,12 @@ export default function Home() {
       return;
     }
 
+    // Проверяем что пользователь на правильной сети
+    if (!isCorrectNetwork) {
+      alert('Please switch to Seismic network before sending transactions!');
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -88,12 +184,13 @@ export default function Home() {
         value: amount,
         timestamp: new Date().toLocaleString(),
         status: 'pending',
-        encrypted: enableEncryption
+        encrypted: enableEncryption,
+        network: 'Seismic'
       };
       
       setTransactions(prev => [newTx, ...prev]);
       
-      alert(`Transaction sent successfully!\nHash: ${txResponse.hash}`);
+      alert(`Transaction sent successfully on Seismic!\nHash: ${txResponse.hash}`);
       
       // Очистить форму
       setRecipientAddress('');
@@ -132,16 +229,17 @@ export default function Home() {
     try {
       setLoading(true);
       
-      // Симуляция процесса шифрования
+      // Симуляция процесса шифрования с использованием Seismic
       const mockEncryptedData = {
         type: selectedEncryptedType,
         contractAddress: contractAddress,
         encryptedValue: `0x${Math.random().toString(16).substr(2, 64)}`,
-        timestamp: new Date().toLocaleString()
+        timestamp: new Date().toLocaleString(),
+        network: 'Seismic'
       };
       
       setEncryptedResult(mockEncryptedData);
-      alert(`Data encrypted successfully using ${selectedEncryptedType}!`);
+      alert(`Data encrypted successfully using ${selectedEncryptedType} on Seismic!`);
       
     } catch (error) {
       console.error('Encryption error:', error);
@@ -157,12 +255,18 @@ export default function Home() {
       return;
     }
 
+    // Проверяем что пользователь на правильной сети
+    if (!isCorrectNetwork) {
+      alert('Please switch to Seismic network before sending encrypted transactions!');
+      return;
+    }
+
     try {
       setLoading(true);
       
       const signer = await provider.getSigner();
       
-      // Симуляция отправки зашифрованной транзакции
+      // Отправка зашифрованной транзакции на Seismic
       const transaction = {
         to: contractAddress,
         value: ethers.parseEther('0.001'), // Минимальная комиссия
@@ -178,12 +282,13 @@ export default function Home() {
         timestamp: new Date().toLocaleString(),
         status: 'pending',
         encrypted: true,
-        encryptedType: selectedEncryptedType
+        encryptedType: selectedEncryptedType,
+        network: 'Seismic'
       };
       
       setTransactions(prev => [newTx, ...prev]);
       
-      alert(`Encrypted transaction sent successfully!\nHash: ${txResponse.hash}\nType: ${selectedEncryptedType}`);
+      alert(`Encrypted transaction sent successfully on Seismic!\nHash: ${txResponse.hash}\nType: ${selectedEncryptedType}`);
       
       // Очистить форму
       setSelectedEncryptedType('');
@@ -228,7 +333,21 @@ export default function Home() {
         <div className="header-content">
           <h1 className="app-title">Seismic Transaction Sender</h1>
           <div className="header-controls">
-            <span className="network-status">Seismic devnet</span>
+            <div className="network-info">
+              <span className={`network-status ${isCorrectNetwork ? 'correct' : 'incorrect'}`}>
+                {currentNetwork ? currentNetwork.name : 'Unknown Network'}
+                {isCorrectNetwork ? ' ✅' : ' ❌'}
+              </span>
+              {!isCorrectNetwork && currentNetwork && (
+                <button 
+                  className="btn btn-warning btn-sm" 
+                  onClick={switchToSeismic}
+                  disabled={loading}
+                >
+                  {loading ? 'Switching...' : 'Switch to Seismic'}
+                </button>
+              )}
+            </div>
             <span className={`connection-status ${authenticated ? 'connected' : 'disconnected'}`}>
               {authenticated ? 'Connected' : 'Disconnected'}
             </span>
@@ -241,7 +360,6 @@ export default function Home() {
                 Connect Wallet
               </button>
             )}
-            <button className="btn btn-success">Add Network</button>
           </div>
         </div>
       </header>
@@ -288,6 +406,11 @@ export default function Home() {
               {/* Send Transaction */}
               <div className="card">
                 <h3 className="card-title">📤 Send Transaction</h3>
+                {!isCorrectNetwork && (
+                  <div className="network-warning">
+                    ⚠️ Warning: You are not connected to Seismic network. Please switch to Seismic before sending transactions.
+                  </div>
+                )}
                 <div className="form-section">
                   <div className="form-group">
                     <label>Recipient Address</label>
@@ -297,17 +420,19 @@ export default function Home() {
                       placeholder="0x... (Enter the recipient's Ethereum address)"
                       value={recipientAddress}
                       onChange={(e) => setRecipientAddress(e.target.value)}
+                      disabled={!isCorrectNetwork}
                     />
                   </div>
                   <div className="form-group">
-                    <label>Amount (ETH)</label>
+                    <label>Amount (SETH)</label>
                     <input
                       type="number"
                       className="form-control"
-                      placeholder="0.0 (Amount to send in ETH)"
+                      placeholder="0.0 (Amount to send in SETH)"
                       step="0.001"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
+                      disabled={!isCorrectNetwork}
                     />
                   </div>
                   <div className="form-group">
@@ -317,6 +442,7 @@ export default function Home() {
                         className="form-check-input"
                         checked={enableEncryption}
                         onChange={(e) => setEnableEncryption(e.target.checked)}
+                        disabled={!isCorrectNetwork}
                       />
                       <label className="form-check-label">
                         Enable Seismic Encryption
@@ -327,9 +453,9 @@ export default function Home() {
                   <button 
                     className="btn btn-primary btn-block"
                     onClick={handleSendTransaction}
-                    disabled={loading || !provider}
+                    disabled={loading || !provider || !isCorrectNetwork}
                   >
-                    {loading ? 'Sending...' : '📤 Send Transaction'}
+                    {loading ? 'Sending...' : '📤 Send Transaction on Seismic'}
                   </button>
                 </div>
               </div>
@@ -337,6 +463,11 @@ export default function Home() {
               {/* Encrypted Types Demo */}
               <div className="card">
                 <h3 className="card-title">🔐 Encrypted Types Demo</h3>
+                {!isCorrectNetwork && (
+                  <div className="network-warning">
+                    ⚠️ Warning: Encrypted transactions only work on Seismic network. Please switch to Seismic.
+                  </div>
+                )}
                 <div className="form-section">
                   <div className="form-group">
                     <label>Select Encrypted Type</label>
@@ -344,6 +475,7 @@ export default function Home() {
                       className="form-control encrypted-type-select"
                       value={selectedEncryptedType}
                       onChange={(e) => setSelectedEncryptedType(e.target.value)}
+                      disabled={!isCorrectNetwork}
                     >
                       <option value="">Choose type...</option>
                       {encryptedTypes.map((type) => (
@@ -361,20 +493,21 @@ export default function Home() {
                       placeholder="0x... (contract address for encrypted transaction)"
                       value={contractAddress}
                       onChange={(e) => setContractAddress(e.target.value)}
+                      disabled={!isCorrectNetwork}
                     />
                   </div>
                   <div className="encrypted-actions">
                     <button 
                       className="btn btn-info"
                       onClick={handleEncryptData}
-                      disabled={loading || !selectedEncryptedType || !contractAddress}
+                      disabled={loading || !selectedEncryptedType || !contractAddress || !isCorrectNetwork}
                     >
                       🔒 Encrypt Data
                     </button>
                     <button 
                       className="btn btn-success"
                       onClick={handleSendEncryptedTransaction}
-                      disabled={loading || !encryptedResult || !provider}
+                      disabled={loading || !encryptedResult || !provider || !isCorrectNetwork}
                     >
                       🚀 Send Encrypted Transaction
                     </button>
