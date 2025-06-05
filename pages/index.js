@@ -34,6 +34,27 @@ const SEISMIC_LINKS = {
   devnet: 'https://docs.seismic.systems/appendix/devnet'
 };
 
+// Utility functions for localStorage
+const TRANSACTIONS_STORAGE_KEY = 'seismic_transactions';
+
+const saveTransactionsToStorage = (transactions) => {
+  try {
+    localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+  } catch (error) {
+    console.error('Error saving transactions to localStorage:', error);
+  }
+};
+
+const loadTransactionsFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error loading transactions from localStorage:', error);
+    return [];
+  }
+};
+
 export default function Home() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
@@ -63,6 +84,70 @@ export default function Home() {
     { value: 'saddress', label: 'saddress - Encrypted Address' },
     { value: 'sbool', label: 'sbool - Encrypted Boolean' }
   ];
+
+  // Load transactions from localStorage on component mount
+  useEffect(() => {
+    const storedTransactions = loadTransactionsFromStorage();
+    setTransactions(storedTransactions);
+  }, []);
+
+  // Save transactions to localStorage whenever transactions state changes
+  useEffect(() => {
+    saveTransactionsToStorage(transactions);
+  }, [transactions]);
+
+  // Check transaction statuses for pending transactions
+  useEffect(() => {
+    if (!provider || !transactions.length) return;
+
+    const checkPendingTransactions = async () => {
+      const pendingTxs = transactions.filter(tx => tx.status === 'pending');
+      
+      if (pendingTxs.length === 0) return;
+
+      for (const tx of pendingTxs) {
+        try {
+          const receipt = await provider.getTransactionReceipt(tx.hash);
+          if (receipt) {
+            const newStatus = receipt.status === 1 ? 'success' : 'failed';
+            
+            setTransactions(prev => 
+              prev.map(t => 
+                t.hash === tx.hash 
+                  ? { ...t, status: newStatus, blockNumber: receipt.blockNumber }
+                  : t
+              )
+            );
+
+            // Update balance if transaction was successful
+            if (newStatus === 'success' && user?.wallet?.address) {
+              updateBalance(user.wallet.address);
+            }
+          }
+        } catch (error) {
+          console.error(`Error checking transaction ${tx.hash}:`, error);
+          
+          // If transaction is not found after some time, mark as failed
+          const txAge = Date.now() - new Date(tx.timestamp).getTime();
+          if (txAge > 10 * 60 * 1000) { // 10 minutes
+            setTransactions(prev => 
+              prev.map(t => 
+                t.hash === tx.hash 
+                  ? { ...t, status: 'failed' }
+                  : t
+              )
+            );
+          }
+        }
+      }
+    };
+
+    // Check immediately and then every 15 seconds
+    checkPendingTransactions();
+    const interval = setInterval(checkPendingTransactions, 15000);
+
+    return () => clearInterval(interval);
+  }, [provider, transactions, user?.wallet?.address]);
 
   // Проверка текущей сети
   const checkNetwork = async (ethereumProvider) => {
@@ -361,20 +446,7 @@ export default function Home() {
       setAmount('');
       setEnableEncryption(false);
       
-      // Ждем подтверждения
-      txResponse.wait().then(() => {
-        setTransactions(prev => 
-          prev.map(tx => 
-            tx.hash === txResponse.hash 
-              ? { ...tx, status: 'success' }
-              : tx
-          )
-        );
-        // Обновляем баланс
-        if (user?.wallet?.address) {
-          updateBalance(user.wallet.address);
-        }
-      });
+      // Transaction status will be automatically checked by useEffect
       
     } catch (error) {
       console.error('Transaction error:', error);
@@ -482,6 +554,11 @@ export default function Home() {
 
   const clearHistory = () => {
     setTransactions([]);
+    try {
+      localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing transactions from localStorage:', error);
+    }
   };
 
   if (!ready) {
@@ -876,17 +953,28 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           <div className="transaction-header">
                             <span className="transaction-type">
                               {tx.encrypted ? '🔐' : '💸'} 
-                              {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                              <a 
+                                href={`${SEISMIC_LINKS.explorer}/tx/${tx.hash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="transaction-hash-link"
+                                title="View on Seismic Explorer"
+                              >
+                                {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                              </a>
                               {tx.encryptedType && <span className="encrypted-badge">{tx.encryptedType}</span>}
                             </span>
                             <span className={`transaction-status status-${tx.status}`}>
-                              {tx.status}
+                              {tx.status === 'pending' && '⏳ Pending'}
+                              {tx.status === 'success' && '✅ Success'}
+                              {tx.status === 'failed' && '❌ Failed'}
                             </span>
                           </div>
                           <div className="transaction-details">
                             <small>To: {tx.to?.slice(0, 10)}...</small>
-                            <small>Amount: {tx.value} ETH</small>
+                            <small>Amount: {tx.value} SETH</small>
                             <small>{tx.timestamp}</small>
+                            {tx.blockNumber && <small>Block: {tx.blockNumber}</small>}
                           </div>
                         </div>
                       ))}
