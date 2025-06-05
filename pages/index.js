@@ -34,6 +34,72 @@ const SEISMIC_LINKS = {
   devnet: 'https://docs.seismic.systems/appendix/devnet'
 };
 
+// Компонент для обнаружения конфликтов кошельков
+function WalletConflictDetector() {
+  const [hasConflict, setHasConflict] = useState(false);
+  const [detectedWallets, setDetectedWallets] = useState([]);
+
+  useEffect(() => {
+    // Проверяем наличие различных кошельков
+    const wallets = [];
+    
+    if (typeof window !== 'undefined') {
+      if (window.ethereum) {
+        if (window.ethereum.isMetaMask) wallets.push('MetaMask');
+        if (window.ethereum.isCoinbaseWallet) wallets.push('Coinbase Wallet');
+        if (window.ethereum.isRabby) wallets.push('Rabby');
+        if (window.ethereum.isTrust) wallets.push('Trust Wallet');
+        if (window.ethereum.isFrame) wallets.push('Frame');
+        
+        // Проверяем наличие массива провайдеров (конфликт)
+        if (window.ethereum.providers && window.ethereum.providers.length > 1) {
+          setHasConflict(true);
+          window.ethereum.providers.forEach(provider => {
+            if (provider.isMetaMask) wallets.push('MetaMask');
+            if (provider.isCoinbaseWallet) wallets.push('Coinbase Wallet');
+            if (provider.isRabby) wallets.push('Rabby');
+          });
+        }
+      }
+      
+      setDetectedWallets([...new Set(wallets)]);
+      
+      // Если больше одного кошелька, возможен конфликт
+      if (wallets.length > 1) {
+        setHasConflict(true);
+      }
+    }
+  }, []);
+
+  if (!hasConflict && detectedWallets.length <= 1) return null;
+
+  return (
+    <div className="wallet-conflict-warning">
+      <div className="conflict-header">
+        ⚠️ <strong>Wallet Conflict Detected</strong>
+      </div>
+      <div className="conflict-info">
+        <p>Multiple wallet extensions detected: {detectedWallets.join(', ')}</p>
+        <div className="conflict-solutions">
+          <h5>To resolve conflicts:</h5>
+          <ol>
+            <li>Disable other wallet extensions except MetaMask</li>
+            <li>Or use only one wallet extension at a time</li>
+            <li>Refresh the page after disabling other wallets</li>
+          </ol>
+        </div>
+        <div className="conflict-help">
+          <strong>Browser Settings:</strong>
+          <ul>
+            <li><strong>Chrome/Edge:</strong> More tools → Extensions → Disable other wallets</li>
+            <li><strong>Firefox:</strong> Add-ons and themes → Extensions → Disable other wallets</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const { ready, authenticated, user, login, logout } = usePrivy();
   const { wallets } = useWallets();
@@ -246,14 +312,99 @@ export default function Home() {
       return;
     }
 
+    // Проверяем что не отправляем самому себе
+    if (recipientAddress.toLowerCase() === user?.wallet?.address?.toLowerCase()) {
+      const shouldUseTestAddress = window.confirm(
+        `You're trying to send tokens to your own address.\n\n` +
+        `This is allowed but not very useful for testing.\n\n` +
+        `Click OK to use a test address, or Cancel to continue with your address.`
+      );
+      
+      if (shouldUseTestAddress) {
+        // Предлагаем тестовый адрес
+        const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
+        setRecipientAddress(testAddress);
+        alert(`Test address set: ${testAddress}\n\nYou can now send a small amount like 0.001 SETH for testing.`);
+        return;
+      }
+    }
+
+    // Проверяем валидность адреса
+    if (!/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)) {
+      alert('Please enter a valid Ethereum address (starts with 0x and is 42 characters long)');
+      return;
+    }
+
+    // Проверяем баланс перед отправкой
+    const currentBalance = parseFloat(balance);
+    const sendAmount = parseFloat(amount);
+    
+    if (currentBalance === 0) {
+      const shouldGetFaucet = window.confirm(
+        `Your balance is 0 SETH. You need test tokens to send transactions.\n\n` +
+        `Click OK to open the Seismic faucet and get free test tokens.\n` +
+        `After getting tokens, return here to try again.`
+      );
+      
+      if (shouldGetFaucet) {
+        window.open(SEISMIC_LINKS.faucet, '_blank');
+      }
+      return;
+    }
+    
+    if (sendAmount > currentBalance) {
+      alert(
+        `Insufficient balance!\n\n` +
+        `You're trying to send: ${sendAmount} SETH\n` +
+        `Your current balance: ${currentBalance} SETH\n\n` +
+        `Please reduce the amount or get more tokens from the faucet.`
+      );
+      return;
+    }
+    
+    // Проверяем что остается достаточно на газ (примерно 0.001 SETH)
+    const estimatedGas = 0.001;
+    if (sendAmount + estimatedGas > currentBalance) {
+      alert(
+        `Please leave some SETH for gas fees!\n\n` +
+        `Recommended max amount: ${(currentBalance - estimatedGas).toFixed(6)} SETH\n` +
+        `(${estimatedGas} SETH reserved for gas)`
+      );
+      return;
+    }
+
     try {
       setLoading(true);
       
       const signer = await provider.getSigner();
+      
+      // Сначала оцениваем газ
       const transaction = {
         to: recipientAddress,
         value: ethers.parseEther(amount)
       };
+      
+      try {
+        const gasEstimate = await signer.estimateGas(transaction);
+        console.log('Gas estimate:', gasEstimate.toString());
+      } catch (gasError) {
+        console.error('Gas estimation failed:', gasError);
+        
+        if (gasError.message.includes('insufficient funds')) {
+          const shouldGetFaucet = window.confirm(
+            `Insufficient funds for transaction!\n\n` +
+            `This error usually means you need more SETH tokens.\n` +
+            `Click OK to open the faucet and get free test tokens.`
+          );
+          
+          if (shouldGetFaucet) {
+            window.open(SEISMIC_LINKS.faucet, '_blank');
+          }
+          return;
+        }
+        
+        throw gasError;
+      }
 
       const txResponse = await signer.sendTransaction(transaction);
       
@@ -293,7 +444,20 @@ export default function Home() {
       
     } catch (error) {
       console.error('Transaction error:', error);
-      alert('Transaction failed: ' + error.message);
+      
+      let errorMessage = 'Transaction failed: ';
+      
+      if (error.message.includes('insufficient funds')) {
+        errorMessage = `Insufficient funds!\n\nYou need more SETH tokens to complete this transaction.\nClick the "🎁 Get Test Tokens" button to get free tokens from the faucet.`;
+      } else if (error.message.includes('user rejected')) {
+        errorMessage = 'Transaction was cancelled by user.';
+      } else if (error.message.includes('network')) {
+        errorMessage = `Network error: ${error.message}\n\nPlease check your connection to Seismic network.`;
+      } else {
+        errorMessage += error.message;
+      }
+      
+      alert(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -465,6 +629,9 @@ Block Explorer: https://explorer-2.seismicdev.net/
         </div>
       </header>
 
+      {/* Wallet Conflict Detection */}
+      <WalletConflictDetector />
+
       <main className="main-content">
         {!authenticated ? (
           <div className="welcome-section">
@@ -627,14 +794,28 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 <div className="form-section">
                   <div className="form-group">
                     <label>Recipient Address</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="0x... (Enter the recipient's Ethereum address)"
-                      value={recipientAddress}
-                      onChange={(e) => setRecipientAddress(e.target.value)}
-                      disabled={!isCorrectNetwork}
-                    />
+                    <div className="input-group">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="0x... (Enter the recipient's Ethereum address)"
+                        value={recipientAddress}
+                        onChange={(e) => setRecipientAddress(e.target.value)}
+                        disabled={!isCorrectNetwork}
+                      />
+                      <button 
+                        className="btn btn-outline-info btn-sm input-helper"
+                        onClick={() => {
+                          const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
+                          setRecipientAddress(testAddress);
+                        }}
+                        disabled={!isCorrectNetwork}
+                        title="Use test address for demo"
+                      >
+                        🧪 Test Address
+                      </button>
+                    </div>
+                    <small className="form-text">Tip: Use the test address button for demo transactions</small>
                   </div>
                   <div className="form-group">
                     <label>Amount (SETH)</label>

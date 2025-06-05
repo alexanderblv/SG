@@ -43,7 +43,8 @@ const privyConfig = {
   supportedChains: [seismicNetwork],
   externalWallets: {
     metamask: true,
-    coinbaseWallet: true,
+    // Отключаем кошельки, которые не поддерживают Seismic Devnet
+    coinbaseWallet: false, // Не поддерживает кастомные devnet сети
     walletConnect: true,
     rainbow: true,
   },
@@ -62,7 +63,12 @@ const privyConfig = {
   mfaConfig: {
     noPromptOnMfaRequired: true,
   },
-  walletConnectCloudProjectId: 'your-project-id-here', // Заменить на реальный ID
+  // Удаляем WalletConnect project ID чтобы избежать ошибок API
+  // walletConnectCloudProjectId: 'your-project-id-here', 
+  // Конфигурация для предотвращения конфликтов кошельков
+  walletConnectV2Config: {
+    projectId: undefined, // Отключаем WalletConnect v2 для избежания конфликтов
+  },
 };
 
 function MyApp({ Component, pageProps }) {

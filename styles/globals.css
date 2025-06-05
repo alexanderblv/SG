@@ -924,4 +924,180 @@ body {
     padding: 2rem 1.5rem;
     margin: 0 1rem;
   }
+}
+
+/* Wallet Conflict Detection Styles */
+.wallet-conflict-warning {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  margin: 1rem 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  animation: warningPulse 2s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+  0%, 100% { 
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  }
+  50% { 
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.5);
+  }
+}
+
+.conflict-header {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.conflict-info {
+  padding: 1.5rem;
+}
+
+.conflict-info > p {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+.conflict-solutions {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.conflict-solutions h5 {
+  margin: 0 0 0.75rem 0;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.conflict-solutions ol {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.conflict-solutions li {
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.conflict-help {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.conflict-help strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.conflict-help ul {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.conflict-help li {
+  margin-bottom: 0.4rem;
+  line-height: 1.3;
+  font-size: 0.9rem;
+}
+
+/* Responsive styles for wallet conflict warning */
+@media (max-width: 768px) {
+  .wallet-conflict-warning {
+    margin: 0.5rem;
+    border-radius: 8px;
+  }
+  
+  .conflict-header {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .conflict-info {
+    padding: 1rem;
+  }
+  
+  .conflict-solutions,
+  .conflict-help {
+    padding: 0.75rem;
+  }
+  
+  .conflict-solutions h5 {
+    font-size: 0.95rem;
+  }
+  
+  .conflict-help li,
+  .conflict-solutions li {
+    font-size: 0.85rem;
+  }
+}
+
+/* Input Group Styles */
+.input-group {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.input-group .form-control {
+  flex: 1;
+  border-radius: 8px 0 0 8px;
+}
+
+.input-helper {
+  border-radius: 0 8px 8px 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.input-helper:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.input-helper:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive input group */
+@media (max-width: 768px) {
+  .input-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .input-group .form-control {
+    border-radius: 8px;
+  }
+  
+  .input-helper {
+    border-radius: 8px;
+    text-align: center;
+    padding: 0.6rem;
+    font-size: 0.85rem;
+  }
 } 
