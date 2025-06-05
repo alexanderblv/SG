@@ -410,7 +410,7 @@ export default function Home() {
       const mockEncryptedData = {
         type: selectedEncryptedType,
         contractAddress: contractAddress,
-        encryptedValue: `0x${Math.random().toString(16).substr(2, 64)}`,
+        encryptedValue: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
         timestamp: new Date().toLocaleString(),
         network: 'Seismic'
       };
@@ -447,7 +447,7 @@ export default function Home() {
       const transaction = {
         to: contractAddress,
         value: ethers.parseEther('0.001'), // Минимальная комиссия
-        data: `0x${Math.random().toString(16).substr(2, 128)}` // Mock encrypted data
+        data: `0x${Array.from({length: 128}, () => Math.floor(Math.random() * 16).toString(16)).join('')}` // Mock encrypted data
       };
 
       const txResponse = await signer.sendTransaction(transaction);
