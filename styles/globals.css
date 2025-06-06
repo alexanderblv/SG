@@ -165,8 +165,8 @@ body {
   flex-direction: column;
   flex: 0 1 auto; /* Allow natural sizing instead of forcing full height */
   min-height: 0;
-  height: 944px; /* Reduced height by 96px (was 1040px, now 944px) */
-  max-height: 944px; /* Maximum height to prevent overflow */
+  height: 939px; /* Reduced height by 5px (was 944px, now 939px) */
+  max-height: 939px; /* Maximum height to prevent overflow */
   align-self: flex-start; /* Align to start instead of stretching */
   padding: 0;
   margin: 0;
