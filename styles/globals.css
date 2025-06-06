@@ -162,11 +162,12 @@ body {
   flex-direction: column;
   flex: 0 1 auto; /* Allow natural sizing instead of forcing full height */
   min-height: 0;
-  height: auto; /* Use content-based height, not forced full height */
-  max-height: none;
+  height: 600px; /* Set a fixed height to align with left column bottom */
+  max-height: 600px; /* Maximum height to prevent overflow */
   align-self: flex-start; /* Align to start instead of stretching */
   padding: 0;
   margin: 0;
+  overflow: hidden; /* Hide overflow content */
 }
 
 .welcome-section {
@@ -588,9 +589,9 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: auto; /* Use natural height instead of forced 300px */
+  min-height: 0; /* Allow flex child to shrink below content size */
   max-height: none; /* Remove max-height constraint */
-  overflow-y: visible; /* Allow natural scrolling behavior */
+  overflow-y: auto; /* Enable vertical scrolling when content overflows */
   overflow-x: hidden;
   padding: 0;
   margin: 0;
@@ -602,10 +603,10 @@ body {
   flex-direction: column;
   gap: 0.75rem;
   flex: 1;
-  overflow-y: visible;
+  overflow-y: visible; /* Let parent handle scrolling */
   overflow-x: hidden;
   padding: 1rem;
-  height: 100%;
+  height: auto; /* Use content height instead of forcing 100% */
   min-height: 0;
   margin: 0;
 }
@@ -620,7 +621,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: auto; /* Use natural height instead of forced 200px */
+  min-height: 400px; /* Set minimum height for better visual balance */
   margin: 0;
 }
 
