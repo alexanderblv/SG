@@ -921,9 +921,19 @@ export default function Home() {
           <h1 className="app-title">Seismic Transaction Sender</h1>
           <div className="header-controls">
             <div className="network-info">
-              <span className={`network-status ${isCorrectNetwork ? 'correct' : 'incorrect'}`}>
-                {currentNetwork ? currentNetwork.name : 'Unknown Network'}
-                {isCorrectNetwork ? ' ✅' : ' ❌'}
+              <span className={`network-status ${
+                !authenticated 
+                  ? 'disconnected'
+                  : isCorrectNetwork 
+                    ? 'correct' 
+                    : 'incorrect'
+              }`}>
+                {!authenticated 
+                  ? 'Wallet Disconnected 🔌'
+                  : isCorrectNetwork 
+                    ? 'Seismic Devnet ✅' 
+                    : (currentNetwork?.name ? `${currentNetwork.name} ❌` : 'Unknown Network ❌')
+                }
               </span>
               {!isCorrectNetwork && currentNetwork && (
                 <div className="network-buttons">
@@ -1115,8 +1125,19 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         <div className="network-status-detailed">
                           <div className="status-row">
                             <span className="status-label">Network:</span>
-                            <span className={`status-value ${isCorrectNetwork ? 'connected' : 'disconnected'}`}>
-                              {isCorrectNetwork ? 'Seismic Devnet ✅' : (currentNetwork?.name || 'Not Connected ❌')}
+                            <span className={`status-value ${
+                              !authenticated 
+                                ? 'disconnected'
+                                : isCorrectNetwork 
+                                  ? 'connected' 
+                                  : 'disconnected'
+                            }`}>
+                              {!authenticated 
+                                ? 'Wallet Disconnected 🔌'
+                                : isCorrectNetwork 
+                                  ? 'Seismic Devnet ✅' 
+                                  : (currentNetwork?.name ? `${currentNetwork.name} ❌` : 'Unknown Network ❌')
+                              }
                             </span>
                           </div>
                           <div className="status-row">
@@ -1194,19 +1215,36 @@ Block Explorer: https://explorer-2.seismicdev.net/
                       <div className="info-item">
                         <label>Current Network</label>
                         <div className="info-value">
-                          {currentNetwork?.name || 'Unknown'}
+                          {!authenticated 
+                            ? 'Wallet Disconnected'
+                            : currentNetwork?.name || 'Unknown'
+                          }
                         </div>
                       </div>
                       <div className="info-item">
                         <label>Chain ID</label>
                         <div className="info-value">
-                          {currentNetwork?.id || 'Unknown'}
+                          {!authenticated 
+                            ? 'N/A'
+                            : currentNetwork?.chainId || 'Unknown'
+                          }
                         </div>
                       </div>
                       <div className="info-item">
                         <label>Status</label>
-                        <div className={`info-value ${isCorrectNetwork ? 'text-success' : 'text-danger'}`}>
-                          {isCorrectNetwork ? '✅ Connected to Seismic' : '❌ Wrong Network'}
+                        <div className={`info-value ${
+                          !authenticated 
+                            ? ''
+                            : isCorrectNetwork 
+                              ? 'text-success' 
+                              : 'text-danger'
+                        }`}>
+                          {!authenticated 
+                            ? '🔌 Wallet Disconnected'
+                            : isCorrectNetwork 
+                              ? '✅ Connected to Seismic' 
+                              : '❌ Wrong Network'
+                          }
                         </div>
                       </div>
                     </div>

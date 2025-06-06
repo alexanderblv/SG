@@ -86,6 +86,12 @@ body {
   border: 1px solid #fecaca;
 }
 
+.network-status.disconnected {
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+}
+
 .connection-status {
   font-weight: 500;
   font-size: 0.9rem;
