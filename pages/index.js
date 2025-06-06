@@ -406,8 +406,8 @@ export default function Home() {
   };
 
   const handleSendTransaction = async () => {
-    if (!provider || !recipientAddress || !amount) {
-      addNotification('Please fill in all fields and connect wallet', 'warning');
+    if (!provider || !amount) {
+      addNotification('Please fill in amount and connect wallet', 'warning');
       return;
     }
 
@@ -417,17 +417,17 @@ export default function Home() {
       return;
     }
 
-    // Проверяем что не отправляем самому себе
-    if (recipientAddress.toLowerCase() === user?.wallet?.address?.toLowerCase()) {
-      const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
-      setRecipientAddress(testAddress);
-      addNotification(`Test address set: ${testAddress}. You can now send a small amount like 0.001 SETH for testing.`, 'info');
+    // Если адрес получателя пустой, используем адрес текущего кошелька
+    const targetRecipient = recipientAddress.trim() || user?.wallet?.address;
+    
+    if (!targetRecipient) {
+      addNotification('Unable to determine recipient address. Please connect wallet or enter recipient address.', 'error');
       return;
     }
 
     // Проверяем валидность адреса
-    if (!/^0x[a-fA-F0-9]{40}$/.test(recipientAddress)) {
-      addNotification('Please enter a valid Ethereum address (starts with 0x and is 42 characters long)', 'error');
+    if (!/^0x[a-fA-F0-9]{40}$/.test(targetRecipient)) {
+      addNotification('Invalid recipient address format', 'error');
       return;
     }
 
@@ -474,7 +474,7 @@ export default function Home() {
         // Генерируем зашифрованные данные для demo
         const encryptedMetadata = {
           sender: user?.wallet?.address,
-          recipient: recipientAddress,
+          recipient: targetRecipient,
           amount: amount,
           timestamp: Date.now(),
           privacy: 'seismic-tdx-encrypted'
@@ -484,7 +484,7 @@ export default function Home() {
         const encryptedData = `0x${Array.from({length: 128}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
         
         transaction = {
-          to: recipientAddress,
+          to: targetRecipient,
           value: ethers.parseEther(amount),
           data: encryptedData,  // 🔐 Добавляем зашифрованные данные!
           gasLimit: 100000     // Увеличиваем лимит газа для зашифрованных tx
@@ -496,7 +496,7 @@ export default function Home() {
         console.log('💸 Preparing standard transparent transaction...');
         
         transaction = {
-          to: recipientAddress,
+          to: targetRecipient,
           value: ethers.parseEther(amount)
         };
         
@@ -522,7 +522,7 @@ export default function Home() {
       
       const newTx = {
         hash: txResponse.hash,
-        to: recipientAddress,
+        to: targetRecipient,
         value: amount,
         timestamp: new Date().toLocaleString(),
         status: 'pending',
@@ -536,7 +536,8 @@ export default function Home() {
       setTransactions(prev => [newTx, ...prev]);
       
       const encryptionStatus = enableEncryption ? '🔐 ENCRYPTED' : '💸 TRANSPARENT';
-      addNotification(`${encryptionStatus} transaction sent successfully on Seismic! Hash: ${txResponse.hash}`, 'success');
+      const recipientInfo = targetRecipient === user?.wallet?.address ? ' (to your own wallet)' : '';
+      addNotification(`${encryptionStatus} transaction sent successfully on Seismic${recipientInfo}! Hash: ${txResponse.hash}`, 'success');
       
       // Очистить форму
       setRecipientAddress('');
@@ -676,8 +677,8 @@ export default function Home() {
   };
 
   const handleEncryptData = async () => {
-    if (!selectedEncryptedType || !contractAddress || !encryptedInputValue.trim()) {
-      addNotification('Please select encrypted type, enter contract address, and provide input value', 'warning');
+    if (!selectedEncryptedType || !encryptedInputValue.trim()) {
+      addNotification('Please select encrypted type and provide input value', 'warning');
       return;
     }
 
@@ -691,6 +692,9 @@ export default function Home() {
 
     setValidationError('');
 
+    // Используем адрес контракта пользователя или адрес текущего кошелька
+    const targetContract = contractAddress.trim() || user?.wallet?.address;
+
     try {
       setLoading(true);
       
@@ -702,7 +706,7 @@ export default function Home() {
         type: selectedEncryptedType,
         originalValue: encryptedInputValue.trim(),
         encodedValue: encodedValue,
-        contractAddress: contractAddress,
+        contractAddress: targetContract,
         // Simulate encrypted value using TDX secure enclaves
         encryptedValue: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
         timestamp: new Date().toLocaleString(),
@@ -711,7 +715,8 @@ export default function Home() {
       };
       
       setEncryptedResult(encryptedData);
-      addNotification(`${selectedEncryptedType} value "${encryptedInputValue}" encrypted successfully on Seismic!`, 'success');
+      const targetInfo = targetContract === user?.wallet?.address ? ' (to your own wallet)' : '';
+      addNotification(`${selectedEncryptedType} value "${encryptedInputValue}" encrypted successfully on Seismic${targetInfo}!`, 'success');
       
     } catch (error) {
       console.error('Encryption error:', error);
@@ -722,7 +727,7 @@ export default function Home() {
   };
 
   const handleSendEncryptedTransaction = async () => {
-    if (!provider || !contractAddress || !selectedEncryptedType) {
+    if (!provider || !selectedEncryptedType) {
       addNotification('Please complete encryption first and connect wallet', 'warning');
       return;
     }
@@ -733,6 +738,14 @@ export default function Home() {
       return;
     }
 
+    // Если адрес контракта пустой, используем адрес текущего кошелька
+    const targetContract = contractAddress.trim() || user?.wallet?.address;
+    
+    if (!targetContract) {
+      addNotification('Unable to determine contract address. Please connect wallet or enter contract address.', 'error');
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -740,7 +753,7 @@ export default function Home() {
       
       // Отправка зашифрованной транзакции на Seismic
       const transaction = {
-        to: contractAddress,
+        to: targetContract,
         value: ethers.parseEther('0.001'), // Минимальная комиссия
         data: `0x${Array.from({length: 128}, () => Math.floor(Math.random() * 16).toString(16)).join('')}` // Mock encrypted data
       };
@@ -749,7 +762,7 @@ export default function Home() {
       
       const newTx = {
         hash: txResponse.hash,
-        to: contractAddress,
+        to: targetContract,
         value: '0.001',
         timestamp: new Date().toLocaleString(),
         status: 'pending',
@@ -760,7 +773,8 @@ export default function Home() {
       
       setTransactions(prev => [newTx, ...prev]);
       
-      addNotification(`Encrypted transaction sent successfully on Seismic! Hash: ${txResponse.hash}, Type: ${selectedEncryptedType}`, 'success');
+      const contractInfo = targetContract === user?.wallet?.address ? ' (to your own wallet)' : '';
+      addNotification(`Encrypted transaction sent successfully on Seismic${contractInfo}! Hash: ${txResponse.hash}, Type: ${selectedEncryptedType}`, 'success');
       
       // Очистить форму
       setSelectedEncryptedType('');
@@ -845,8 +859,13 @@ export default function Home() {
       
       const signer = await provider.getSigner();
       
-      // Используем адрес контракта пользователя или адрес по умолчанию для демо
-      const targetAddress = messageContractAddress || '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
+      // Используем адрес контракта пользователя или адрес текущего кошелька
+      const targetAddress = messageContractAddress.trim() || user?.wallet?.address;
+      
+      if (!targetAddress) {
+        addNotification('Unable to determine target address. Please connect wallet or enter contract address.', 'error');
+        return;
+      }
       
       // Отправка зашифрованного сообщения на Seismic
       const transaction = {
@@ -871,7 +890,8 @@ export default function Home() {
       
       setTransactions(prev => [newTx, ...prev]);
       
-      addNotification(`Encrypted message sent successfully on Seismic! Hash: ${txResponse.hash}`, 'success');
+      const addressInfo = targetAddress === user?.wallet?.address ? ' (to your own wallet)' : '';
+      addNotification(`Encrypted message sent successfully on Seismic${addressInfo}! Hash: ${txResponse.hash}`, 'success');
       
       // Очистить форму
       setMessageToEncrypt('');
@@ -1302,24 +1322,13 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           <input
                             type="text"
                             className="form-control"
-                            placeholder="0x... (Enter the recipient's Ethereum address)"
+                            placeholder="0x... (Enter recipient address or leave empty to send to your wallet)"
                             value={recipientAddress}
                             onChange={(e) => setRecipientAddress(e.target.value)}
                             disabled={!isCorrectNetwork}
                           />
-                          <button 
-                            className="btn btn-outline-info btn-sm input-helper"
-                            onClick={() => {
-                              const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
-                              setRecipientAddress(testAddress);
-                            }}
-                            disabled={!isCorrectNetwork}
-                            title="Use test address for demo"
-                          >
-                            🧪 Test Address
-                          </button>
                         </div>
-                        <small className="form-text">Tip: Use the test address button for demo transactions</small>
+                        <small className="form-text">💡 Leave empty to send to your own wallet</small>
                       </div>
                       <div className="form-group">
                         <label>Amount (SETH)</label>
@@ -1391,11 +1400,12 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         <input
                           type="text"
                           className="form-control"
-                          placeholder="0x... (contract address for encrypted transaction)"
+                          placeholder="0x... (Enter contract address or leave empty to use your wallet)"
                           value={contractAddress}
                           onChange={(e) => setContractAddress(e.target.value)}
                           disabled={!isCorrectNetwork}
                         />
+                        <small className="form-text">💡 Leave empty to send to your own wallet</small>
                       </div>
                       <div className="form-group">
                         <label>Input Value</label>
@@ -1437,7 +1447,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         <button 
                           className="btn btn-info"
                           onClick={handleEncryptData}
-                          disabled={loading || !selectedEncryptedType || !contractAddress || !encryptedInputValue.trim() || !isCorrectNetwork}
+                          disabled={loading || !selectedEncryptedType || !encryptedInputValue.trim() || !isCorrectNetwork}
                         >
                           🔒 Encrypt Data
                         </button>
@@ -1589,13 +1599,13 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         <input
                           type="text"
                           className="form-control"
-                          placeholder="0x... (contract to receive encrypted message)"
+                          placeholder="0x... (Enter contract address or leave empty to use your wallet)"
                           value={messageContractAddress}
                           onChange={(e) => setMessageContractAddress(e.target.value)}
                           disabled={!isCorrectNetwork}
                         />
                         <small className="form-text">
-                          Leave empty to send to a default message storage contract
+                          💡 Leave empty to send to your own wallet
                         </small>
                       </div>
                       <div className="message-actions">
