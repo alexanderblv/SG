@@ -1756,4 +1756,34 @@ body {
   .encrypted-data code {
     font-size: 0.75rem;
   }
+}
+
+/* Transaction encryption details */
+.encryption-info {
+  color: #28a745 !important;
+  font-weight: 600;
+}
+
+.data-info {
+  color: #007bff !important;
+}
+
+.gas-info {
+  color: #ffc107 !important;
+}
+
+.transparent-info {
+  color: #6c757d !important;
+  font-style: italic;
+}
+
+/* Enhanced transaction display */
+.transaction-details small {
+  display: block;
+  margin-bottom: 2px;
+  font-size: 0.75rem;
+}
+
+.transaction-details small:last-child {
+  margin-bottom: 0;
 } 

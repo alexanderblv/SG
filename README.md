@@ -276,3 +276,108 @@ Input: "true" → Encoded: "0x01" → Encrypted: "0x..." (TDX)
 ### Интеграция с TDX Secure Enclaves
 
 Все зашифрованные типы используют **Intel TDX** secure enclaves для обеспечения конфиденциальности согласно архитектуре Seismic. 
+
+## 🚀 Переход к реальному блокчейну Seismic
+
+### 🎯 Roadmap: От эмуляции к production
+
+Текущая реализация - это **типобезопасная эмуляция** Seismic зашифрованных типов. Вот план перехода к реальному блокчейну:
+
+#### **Phase 1: Seismic Devnet Integration (Q2 2025)**
+```bash
+# Установка Seismic development tools
+curl -L -H "Accept: application/vnd.github.v3.raw" \
+  "https://api.github.com/repos/SeismicSystems/seismic-foundry/contents/sfoundryup/install?ref=seismic" | bash
+
+# Подключение к Seismic devnet
+# Развертывание реальных зашифрованных контрактов
+```
+
+**Требования:**
+- ✅ Seismic devnet доступен
+- ✅ sfoundryup development tools
+- ❌ Intel TDX cloud infrastructure 
+- ❌ Production-ready encrypted types
+
+#### **Phase 2: Intel TDX Infrastructure (Q3-Q4 2025)**
+```bash
+# Cloud providers с TDX поддержкой:
+- Azure Confidential Computing (TDX preview)
+- AWS Nitro Enclaves (планируется TDX)
+- Google Cloud Confidential VMs
+```
+
+**Требования:**
+- ⏳ TDX cloud availability
+- ⏳ Seismic mainnet launch
+- ⏳ Production security audits
+
+#### **Phase 3: Real Encrypted Applications (2026)**
+```solidity
+// Реальные зашифрованные типы в production
+pragma solidity ^0.8.0;
+
+contract RealEncryptedVoting {
+    saddress private voter;
+    suint32 private encryptedVote;  // Реально зашифровано!
+    sbool private hasVoted;
+    
+    function castVote(suint32 _vote) public {
+        // Реальное шифрование на Intel TDX
+        encryptedVote = _vote;
+        voter = saddress(msg.sender);
+        hasVoted = true;
+    }
+}
+```
+
+### 🛠️ Технические препятствия
+
+#### **1. Intel TDX Limitations**
+- **Side-channel атаки**: Heckler, memory blocking
+- **Hardware dependencies**: Специальные CPU
+- **Trust assumptions**: Intel as root of trust
+
+#### **2. Seismic Development Status**
+- **v0 release**: Только storage encryption
+- **Missing features**: Full memory encryption, UX optimizations
+- **Performance**: "Default all encrypted" affects speed
+
+#### **3. Infrastructure Costs**
+```bash
+# Примерная стоимость TDX infrastructure:
+# Azure Confidential Computing: $0.50-2.00/hour
+# Специализированные TDX instances: $1000-5000/month
+# Development setup: Требует dedicated hardware
+```
+
+### 📋 Immediate Next Steps
+
+**Для подготовки к реальному Seismic:**
+
+1. **Seismic Devnet Testing**
+   ```bash
+   # Тестирование на Seismic devnet
+   git clone https://github.com/SeismicSystems/try-devnet.git
+   cd try-devnet
+   bash script/deploy.sh
+   ```
+
+2. **Intel TDX Research**
+   - Изучение TDX security model
+   - Тестирование на TDX-enabled cloud
+   - Анализ side-channel mitigations
+
+3. **Application Architecture**
+   - Подготовка к hybrid encrypted/transparent data
+   - Оптимизация для TDX performance constraints
+   - Planning for secure key management
+
+### 🎯 **Вывод**
+
+**Эмуляция VS Реальность:**
+- ✅ **Сейчас**: Типобезопасная эмуляция для изучения концепций
+- ⏳ **2025**: Seismic devnet для тестирования
+- 🎯 **2026**: Production-ready зашифрованные dApps
+
+**Наша демо-приложение** - отличная подготовка к будущему, где пользователи смогут реально шифровать данные на блокчейне! 
