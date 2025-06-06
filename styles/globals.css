@@ -150,7 +150,7 @@ body {
 
 /* Override right column to remove gaps and fill full height */
 .right-column {
-  gap: 0; /* Remove gap to use full available height */
+  gap: 1.5rem; /* Restore normal gap to match left column */
 }
 
 /* Make transaction card fill ALL available height in right column */
@@ -159,7 +159,7 @@ body {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  height: calc(100vh - 200px); /* Force full height minus header/margins */
+  height: 100%; /* Use natural height, not forced */
   max-height: none;
   align-self: stretch;
   justify-self: stretch;
@@ -586,8 +586,8 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 0;
-  max-height: none;
+  min-height: 400px; /* Restore minimum height */
+  max-height: calc(100vh - 300px); /* Restore reasonable max height */
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0;
