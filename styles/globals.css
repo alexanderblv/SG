@@ -580,9 +580,10 @@ body {
 }
 
 .transaction-card .card-header {
-  padding: 1rem;
-  margin: 0 1.5rem;
+  padding: 0.75rem 1rem; /* Minimal padding for header only */
+  margin: 0;
   border-bottom: 1px solid #e0e6ed;
+  background: white; /* Ensure header has background */
 }
 
 .transaction-card .transaction-history {
@@ -593,7 +594,7 @@ body {
   max-height: calc(100vh - 200px);
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 1rem 1.5rem 1rem 1.5rem;
+  padding: 0; /* Remove ALL padding */
   margin: 0;
 }
 
@@ -605,7 +606,7 @@ body {
   flex: 1;
   overflow-y: visible;
   overflow-x: hidden;
-  padding: 0;
+  padding: 1rem; /* Add minimal padding only for content readability */
   height: 100%;
   min-height: 0;
   margin: 0;
