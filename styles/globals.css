@@ -143,26 +143,28 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-height: 100%;
-  height: 100%;
+  min-height: auto;
+  height: auto;
   align-items: stretch;
 }
 
 /* Override right column to remove gaps and fill full height */
 .right-column {
   gap: 1.5rem; /* Restore normal gap to match left column */
+  height: auto; /* Use content-based height instead of forcing 100% */
+  min-height: auto; /* Allow natural minimum height */
+  align-items: flex-start; /* Align items to start instead of stretching */
 }
 
 /* Make transaction card fill ALL available height in right column */
 .transaction-card {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  flex: 0 1 auto; /* Allow natural sizing instead of forcing full height */
   min-height: 0;
-  height: 100%; /* Use natural height, not forced */
+  height: auto; /* Use content-based height, not forced full height */
   max-height: none;
-  align-self: stretch;
-  justify-self: stretch;
+  align-self: flex-start; /* Align to start instead of stretching */
   padding: 0;
   margin: 0;
 }
