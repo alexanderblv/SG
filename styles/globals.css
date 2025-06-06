@@ -127,6 +127,7 @@ body {
   align-items: stretch;
   min-height: calc(100vh - 200px);
   grid-template-rows: 1fr;
+  height: 100%;
 }
 
 .content-container {
@@ -144,13 +145,15 @@ body {
   gap: 1.5rem;
   min-height: 100%;
   height: 100%;
-  align-items: stretch; /* Ensure child elements stretch to full width */
+  align-items: stretch;
 }
 
 /* Ensure the right column takes full height and Transaction History card fills it */
 .right-column {
   height: 100%;
-  justify-content: stretch; /* Stretch children to fill available height */
+  min-height: 100%;
+  justify-content: stretch;
+  align-self: stretch;
 }
 
 .welcome-section {
@@ -554,6 +557,7 @@ body {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
+  height: 100%;
 }
 
 /* Make transaction card stretch to fill available space */
@@ -562,19 +566,20 @@ body {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  height: 100%; /* Take full height of right column */
-  max-height: 100%; /* Don't exceed right column height */
-  align-self: stretch; /* Stretch to match the height of the left column */
+  height: 100%;
+  max-height: none;
+  align-self: stretch;
+  justify-self: stretch;
 }
 
 .transaction-card .transaction-history {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 0; /* Force flex item to use flex-grow */
-  min-height: 0; /* Allow shrinking */
-  overflow-y: auto; /* Enable scrolling when content overflows */
-  overflow-x: hidden; /* Hide horizontal scrollbar */
+  min-height: 400px;
+  max-height: calc(100vh - 300px);
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Make transaction list fill available space */
@@ -739,19 +744,21 @@ body {
   }
   
   .tab-content {
-    min-height: 500px; /* Smaller minimum height for tablet */
+    min-height: 500px;
+    grid-template-columns: 1fr;
   }
   
   .transaction-card {
-    height: 100%; /* Keep full height behavior */
-    max-height: 100%; /* Don't exceed parent height */
+    height: auto;
+    min-height: 400px;
+    max-height: none;
   }
   
   .transaction-card .transaction-history {
-    height: 0; /* Force flex behavior */
-    min-height: 0; /* Allow shrinking */
-    overflow-y: auto; /* Enable scrolling when content overflows */
-    overflow-x: hidden; /* Hide horizontal scrollbar */
+    min-height: 300px;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .empty-state {
@@ -802,24 +809,26 @@ body {
   }
   
   .tab-content {
-    min-height: 400px; /* Smaller minimum height for mobile */
+    min-height: 400px;
+    grid-template-columns: 1fr;
   }
   
   /* Mobile transaction card styles */
   .transaction-card {
-    height: 100%; /* Keep full height behavior for mobile */
-    max-height: 100%; /* Don't exceed parent height for mobile */
+    height: auto;
+    min-height: 350px;
+    max-height: none;
   }
   
   .transaction-card .transaction-history {
-    height: 0; /* Force flex behavior for mobile */
-    min-height: 0; /* Allow shrinking for mobile */
-    overflow-y: auto; /* Enable scrolling when content overflows */
-    overflow-x: hidden; /* Hide horizontal scrollbar */
+    min-height: 250px;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
   
   .empty-state {
-    min-height: 150px; /* Smaller empty state for mobile */
+    min-height: 150px;
   }
 }
 
@@ -1561,9 +1570,10 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  min-height: 600px; /* Set minimum height for consistent layout */
-  align-items: stretch; /* Ensure columns stretch to match height */
-  grid-template-rows: 1fr; /* Ensure both columns have the same height */
+  min-height: calc(100vh - 250px);
+  height: 100%;
+  align-items: stretch;
+  grid-template-rows: 1fr;
 }
 
 .tab-content .left-column,
@@ -1571,7 +1581,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  height: 100%; /* Ensure columns take full height */
+  height: 100%;
+  min-height: 100%;
+  align-self: stretch;
 }
 
 /* Quick Actions */
@@ -2206,5 +2218,42 @@ body {
   
   .transaction-status-section {
     gap: 0.25rem;
+  }
+}
+
+/* Force equal height columns on desktop */
+@media (min-width: 1201px) {
+  .content-grid {
+    align-items: stretch;
+    min-height: calc(100vh - 200px);
+  }
+  
+  .left-column,
+  .right-column {
+    height: 100%;
+    min-height: calc(100vh - 200px);
+  }
+  
+  .tab-content {
+    align-items: stretch;
+    min-height: calc(100vh - 250px);
+  }
+  
+  .tab-content .left-column,
+  .tab-content .right-column {
+    height: 100%;
+    min-height: calc(100vh - 250px);
+  }
+  
+  .transaction-card {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .transaction-card .transaction-history {
+    flex: 1;
+    min-height: 400px;
   }
 } 
