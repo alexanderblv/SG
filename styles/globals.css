@@ -144,11 +144,13 @@ body {
   gap: 1.5rem;
   min-height: 100%;
   height: 100%;
+  align-items: stretch; /* Ensure child elements stretch to full width */
 }
 
 /* Ensure the right column takes full height and Transaction History card fills it */
 .right-column {
   height: 100%;
+  justify-content: stretch; /* Stretch children to fill available height */
 }
 
 .welcome-section {
@@ -560,16 +562,17 @@ body {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  height: 600px; /* Fixed height instead of 100% */
-  max-height: 600px; /* Fixed maximum height to prevent growing */
+  height: 100%; /* Change from fixed 600px to 100% to match left column height */
+  max-height: none; /* Remove fixed maximum height constraint */
+  align-self: stretch; /* Stretch to match the height of the left column */
 }
 
 .transaction-card .transaction-history {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: 480px; /* Fixed height for transaction list area */
-  max-height: 480px; /* Ensure it doesn't grow beyond this */
+  height: auto; /* Change from fixed 480px to auto */
+  max-height: none; /* Remove fixed maximum height constraint */
   overflow-y: auto; /* Enable scrolling */
   overflow-x: hidden; /* Hide horizontal scrollbar */
 }
@@ -736,13 +739,13 @@ body {
   }
   
   .transaction-card {
-    height: 500px; /* Fixed height for tablet */
-    max-height: 500px; /* Fixed maximum height for tablet */
+    height: auto; /* Change from fixed height to auto for tablet */
+    max-height: none; /* Remove fixed maximum height constraint for tablet */
   }
   
   .transaction-card .transaction-history {
-    height: 380px; /* Fixed height for tablet */
-    max-height: 380px; /* Ensure it doesn't grow beyond this */
+    height: auto; /* Change from fixed height to auto for tablet */
+    max-height: none; /* Remove fixed maximum height constraint for tablet */
     overflow-y: auto; /* Enable scrolling */
     overflow-x: hidden; /* Hide horizontal scrollbar */
   }
@@ -796,13 +799,13 @@ body {
   
   /* Mobile transaction card styles */
   .transaction-card {
-    height: 400px; /* Fixed height for mobile */
-    max-height: 400px; /* Fixed maximum height for mobile */
+    height: auto; /* Change from fixed height to auto for mobile */
+    max-height: none; /* Remove fixed maximum height constraint for mobile */
   }
   
   .transaction-card .transaction-history {
-    height: 280px; /* Fixed height for mobile */
-    max-height: 280px; /* Ensure it doesn't grow beyond this */
+    height: auto; /* Change from fixed height to auto for mobile */
+    max-height: none; /* Remove fixed maximum height constraint for mobile */
     overflow-y: auto; /* Enable scrolling */
     overflow-x: hidden; /* Hide horizontal scrollbar */
   }
@@ -1551,6 +1554,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   min-height: 400px;
+  align-items: stretch; /* Ensure columns stretch to match height */
 }
 
 .tab-content .left-column,
@@ -1558,6 +1562,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  height: 100%; /* Ensure columns take full height */
 }
 
 /* Quick Actions */
