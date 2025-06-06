@@ -162,8 +162,8 @@ body {
   flex-direction: column;
   flex: 0 1 auto; /* Allow natural sizing instead of forcing full height */
   min-height: 0;
-  height: 600px; /* Set a fixed height to align with left column bottom */
-  max-height: 600px; /* Maximum height to prevent overflow */
+  height: 1040px; /* Increased height by 440px (was 600px, now 1040px) */
+  max-height: 1040px; /* Maximum height to prevent overflow */
   align-self: flex-start; /* Align to start instead of stretching */
   padding: 0;
   margin: 0;
