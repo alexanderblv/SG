@@ -463,13 +463,13 @@ export default function Home() {
       
       const signer = await provider.getSigner();
       
-      // 🔐 НОВАЯ ЛОГИКА: Различные транзакции для обычных и зашифрованных
+      // НОВАЯ ЛОГИКА: Различные транзакции для обычных и зашифрованных
       let transaction;
       let transactionType = enableEncryption ? 'encrypted' : 'standard';
       
       if (enableEncryption) {
-        // 🔐 ЗАШИФРОВАННАЯ ТРАНЗАКЦИЯ
-        console.log('🔐 Preparing ENCRYPTED transaction with Seismic privacy features...');
+        // ЗАШИФРОВАННАЯ ТРАНЗАКЦИЯ
+        console.log('Preparing ENCRYPTED transaction with Seismic privacy features...');
         
         // Генерируем зашифрованные данные для demo
         const encryptedMetadata = {
@@ -486,21 +486,21 @@ export default function Home() {
         transaction = {
           to: targetRecipient,
           value: ethers.parseEther(amount),
-          data: encryptedData,  // 🔐 Добавляем зашифрованные данные!
+          data: encryptedData,  // Добавляем зашифрованные данные!
           gasLimit: 100000     // Увеличиваем лимит газа для зашифрованных tx
         };
         
-        addNotification('🔐 Preparing encrypted transaction with Seismic TDX privacy features...', 'info');
+        addNotification('Preparing encrypted transaction with Seismic TDX privacy features...', 'info');
       } else {
-        // 💸 ОБЫЧНАЯ ТРАНЗАКЦИЯ
-        console.log('💸 Preparing standard transparent transaction...');
+        // ОБЫЧНАЯ ТРАНЗАКЦИЯ
+        console.log('Preparing standard transparent transaction...');
         
         transaction = {
           to: targetRecipient,
           value: ethers.parseEther(amount)
         };
         
-        addNotification('💸 Preparing standard transparent transaction...', 'info');
+        addNotification('Preparing standard transparent transaction...', 'info');
       }
       
       // Оцениваем газ
@@ -535,7 +535,7 @@ export default function Home() {
       
       setTransactions(prev => [newTx, ...prev]);
       
-      const encryptionStatus = enableEncryption ? '🔐 ENCRYPTED' : '💸 TRANSPARENT';
+      const encryptionStatus = enableEncryption ? 'ENCRYPTED' : 'TRANSPARENT';
       const recipientInfo = targetRecipient === user?.wallet?.address ? ' (to your own wallet)' : '';
       addNotification(`${encryptionStatus} transaction sent successfully on Seismic${recipientInfo}! Hash: ${txResponse.hash}`, 'success');
       
@@ -552,7 +552,7 @@ export default function Home() {
       let errorMessage = 'Transaction failed: ';
       
       if (error.message.includes('insufficient funds')) {
-        errorMessage = `Insufficient funds! You need more SETH tokens to complete this transaction. Click the "🎁 Get Test Tokens" button to get free tokens from the faucet.`;
+        errorMessage = `Insufficient funds! You need more SETH tokens to complete this transaction. Click the "Get Test Tokens" button to get free tokens from the faucet.`;
       } else if (error.message.includes('user rejected')) {
         errorMessage = 'Transaction was cancelled by user.';
       } else if (error.message.includes('network')) {
@@ -949,10 +949,10 @@ export default function Home() {
                     : 'incorrect'
               }`}>
                 {!authenticated 
-                  ? 'Wallet Disconnected 🔌'
+                  ? 'Wallet Disconnected'
                   : isCorrectNetwork 
-                    ? 'Seismic Devnet ✅' 
-                    : (currentNetwork?.name ? `${currentNetwork.name} ❌` : 'Unknown Network ❌')
+                    ? 'Connected to Seismic'
+                    : 'Wrong Network'
                 }
               </span>
               {!isCorrectNetwork && currentNetwork && (
@@ -1018,10 +1018,10 @@ Block Explorer: https://explorer-2.seismicdev.net/
             >
               <div className="notification-content">
                 <div className="notification-icon">
-                  {notification.type === 'success' && '✅'}
-                  {notification.type === 'error' && '❌'}
-                  {notification.type === 'warning' && '⚠️'}
-                  {notification.type === 'info' && 'ℹ️'}
+                  {notification.type === 'success' && '✓'}
+                  {notification.type === 'error' && '✗'}
+                  {notification.type === 'warning' && '!'}
+                  {notification.type === 'info' && 'i'}
                 </div>
                 <div className="notification-message">
                   {notification.message}
@@ -1050,7 +1050,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
               
               <div className="welcome-info">
                 <div className="network-info-box">
-                  <h4>🌐 Seismic Network Details</h4>
+                  <h4>Seismic Network Details</h4>
                   <div className="network-details">
                     <div><strong>Network:</strong> Seismic Devnet</div>
                     <div><strong>Chain ID:</strong> 5124</div>
@@ -1059,16 +1059,16 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 </div>
                 
                 <div className="resources-info-box">
-                  <h4>🔗 Useful Resources</h4>
+                  <h4>Useful Resources</h4>
                   <div className="resource-links-welcome">
                     <a href={SEISMIC_LINKS.faucet} target="_blank" rel="noopener noreferrer" className="resource-link">
-                      🚰 Get Test Tokens
+                      Get Test Tokens
                     </a>
                     <a href={SEISMIC_LINKS.docs} target="_blank" rel="noopener noreferrer" className="resource-link">
-                      📚 Documentation
+                      Documentation
                     </a>
                     <a href={SEISMIC_LINKS.explorer} target="_blank" rel="noopener noreferrer" className="resource-link">
-                      🔍 Explorer
+                      Explorer
                     </a>
                   </div>
                 </div>
@@ -1080,7 +1080,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
               
               <div className="welcome-note">
                 <small>
-                  💡 After connecting, the app will automatically switch your wallet to Seismic network.
+                  After connecting, the app will automatically switch your wallet to Seismic network.
                   If you need test tokens, use the faucet link above.
                 </small>
               </div>
@@ -1094,19 +1094,19 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 className={`tab-button ${activeTab === 'transactions' ? 'active' : ''}`}
                 onClick={() => setActiveTab('transactions')}
               >
-                📤 Transactions
+                Transactions
               </button>
               <button 
                 className={`tab-button ${activeTab === 'messages' ? 'active' : ''}`}
                 onClick={() => setActiveTab('messages')}
               >
-                💬 Encrypted Messages
+                Encrypted Messages
               </button>
               <button 
                 className={`tab-button ${activeTab === 'wallet' ? 'active' : ''}`}
                 onClick={() => setActiveTab('wallet')}
               >
-                🔒 Wallet & Network
+                Wallet & Network
               </button>
             </div>
 
@@ -1116,14 +1116,14 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 <div className="left-column">
                   {/* Wallet Information */}
                   <div className="card">
-                    <h3 className="card-title">🔒 Wallet Information</h3>
+                    <h3 className="card-title">Wallet Information</h3>
                     <div className="info-section">
                       <div className="info-item">
                         <label>Your Address</label>
                         <div className="info-value address-display">
                           {user?.wallet?.address || 'Connect wallet to see address'}
                           <button className="copy-btn" onClick={() => navigator.clipboard.writeText(user?.wallet?.address)}>
-                            📋
+                            Copy
                           </button>
                         </div>
                       </div>
@@ -1132,7 +1132,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         <div className="info-value balance-display">
                           {balance}
                           <button className="refresh-btn" onClick={() => user?.wallet?.address && updateBalance(user.wallet.address)}>
-                            🔄
+                            Refresh
                           </button>
                         </div>
                       </div>
@@ -1141,7 +1141,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
 
                   {/* Seismic Network Info */}
                   <div className="card seismic-info-card">
-                    <h3 className="card-title">⚡ Seismic Network Resources</h3>
+                    <h3 className="card-title">Seismic Network Resources</h3>
                     <div className="seismic-resources">
                       <div className="resource-section">
                         <div className="network-status-detailed">
@@ -1155,10 +1155,10 @@ Block Explorer: https://explorer-2.seismicdev.net/
                                   : 'disconnected'
                             }`}>
                               {!authenticated 
-                                ? 'Wallet Disconnected 🔌'
+                                ? 'Wallet Disconnected'
                                 : isCorrectNetwork 
-                                  ? 'Seismic Devnet ✅' 
-                                  : (currentNetwork?.name ? `${currentNetwork.name} ❌` : 'Unknown Network ❌')
+                                  ? 'Connected to Seismic'
+                                  : 'Wrong Network'
                               }
                             </span>
                           </div>
@@ -1174,7 +1174,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         
                         {balance === '0.0' && isCorrectNetwork && (
                           <div className="low-balance-warning">
-                            💡 <strong>Need test tokens?</strong> Get free SETH from the faucet below!
+                            <strong>Need test tokens?</strong> Get free SETH from the faucet below!
                           </div>
                         )}
                         
@@ -1185,7 +1185,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                             rel="noopener noreferrer"
                             className="btn btn-success btn-sm resource-btn"
                           >
-                            🚰 Get Test Tokens (Faucet)
+                            Get Test Tokens (Faucet)
                           </a>
                           <a 
                             href={SEISMIC_LINKS.explorer} 
@@ -1193,7 +1193,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                             rel="noopener noreferrer"
                             className="btn btn-info btn-sm resource-btn"
                           >
-                            🔍 Block Explorer
+                            Block Explorer
                           </a>
                           <a 
                             href={SEISMIC_LINKS.docs} 
@@ -1201,7 +1201,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                             rel="noopener noreferrer"
                             className="btn btn-outline-primary btn-sm resource-btn"
                           >
-                            📚 Documentation
+                            Documentation
                           </a>
                           <a 
                             href={SEISMIC_LINKS.devnet} 
@@ -1209,7 +1209,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                             rel="noopener noreferrer"
                             className="btn btn-outline-secondary btn-sm resource-btn"
                           >
-                            🛠 Devnet Guide
+                            Devnet Guide
                           </a>
                         </div>
                         
@@ -1220,7 +1220,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                               onClick={() => switchToSeismic(false)}
                               disabled={loading}
                             >
-                              {loading ? 'Switching to Seismic...' : '🔄 Switch to Seismic Network'}
+                              {loading ? 'Switching to Seismic...' : 'Switch to Seismic Network'}
                             </button>
                           </div>
                         )}
@@ -1232,7 +1232,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 <div className="right-column">
                   {/* Network Information Card */}
                   <div className="card">
-                    <h3 className="card-title">🌐 Network Information</h3>
+                    <h3 className="card-title">Network Information</h3>
                     <div className="info-section">
                       <div className="info-item">
                         <label>Current Network</label>
@@ -1264,7 +1264,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           {!authenticated 
                             ? '🔌 Wallet Disconnected'
                             : isCorrectNetwork 
-                              ? '✅ Connected to Seismic' 
+                              ? '✅ Connected to Seismic'
                               : '❌ Wrong Network'
                           }
                         </div>
@@ -1274,14 +1274,14 @@ Block Explorer: https://explorer-2.seismicdev.net/
 
                   {/* Quick Actions */}
                   <div className="card">
-                    <h3 className="card-title">⚡ Quick Actions</h3>
+                    <h3 className="card-title">Quick Actions</h3>
                     <div className="quick-actions">
                       <button 
                         className="btn btn-primary btn-block"
                         onClick={() => user?.wallet?.address && updateBalance(user.wallet.address)}
                         disabled={loading}
                       >
-                        🔄 Refresh Balance
+                        Refresh Balance
                       </button>
                       {!isCorrectNetwork && (
                         <button 
@@ -1289,14 +1289,14 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           onClick={() => switchToSeismic(false)}
                           disabled={loading}
                         >
-                          🔄 Switch to Seismic
+                          Switch to Seismic
                         </button>
                       )}
                       <button 
                         className="btn btn-outline-primary btn-block"
                         onClick={() => setActiveTab('transactions')}
                       >
-                        📤 Go to Transactions
+                        Go to Transactions
                       </button>
                     </div>
                   </div>
@@ -1309,12 +1309,10 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 <div className="left-column">
                   {/* Send Transaction */}
                   <div className="card">
-                    <h3 className="card-title">📤 Send Transaction</h3>
-                    {!isCorrectNetwork && (
-                      <div className="network-warning">
-                        ⚠️ Warning: You are not connected to Seismic network. Please switch to Seismic before sending transactions.
-                      </div>
-                    )}
+                    <h3 className="card-title">Send Transaction</h3>
+                    <div className="network-warning">
+                      Warning: You are not connected to Seismic network. Please switch to Seismic before sending transactions.
+                    </div>
                     <div className="form-section">
                       <div className="form-group">
                         <label>Recipient Address</label>
@@ -1328,7 +1326,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                             disabled={!isCorrectNetwork}
                           />
                         </div>
-                        <small className="form-text">💡 Leave empty to send to your own wallet</small>
+                        <small className="form-text">Leave empty to send to your own wallet</small>
                       </div>
                       <div className="form-group">
                         <label>Amount (SETH)</label>
@@ -1352,7 +1350,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                             disabled={!isCorrectNetwork}
                           />
                           <label className="form-check-label">
-                            🔐 Enable Seismic TDX Encryption
+                            Enable Seismic TDX Encryption
                           </label>
                           <small className="form-text">
                             Add encrypted metadata to transaction using Seismic's Intel TDX secure enclaves 
@@ -1365,19 +1363,17 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         onClick={handleSendTransaction}
                         disabled={loading || !provider || !isCorrectNetwork}
                       >
-                        {loading ? 'Sending...' : '📤 Send Transaction on Seismic'}
+                        {loading ? 'Sending...' : 'Send Transaction on Seismic'}
                       </button>
                     </div>
                   </div>
 
                   {/* Encrypted Types Demo */}
                   <div className="card">
-                    <h3 className="card-title">🔐 Encrypted Types Demo</h3>
-                    {!isCorrectNetwork && (
-                      <div className="network-warning">
-                        ⚠️ Warning: Encrypted transactions only work on Seismic network. Please switch to Seismic.
-                      </div>
-                    )}
+                    <h3 className="card-title">Encrypted Types Demo</h3>
+                    <div className="network-warning">
+                      Warning: Encrypted transactions only work on Seismic network. Please switch to Seismic.
+                    </div>
                     <div className="form-section">
                       <div className="form-group">
                         <label>Select Encrypted Type</label>
@@ -1405,7 +1401,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           onChange={(e) => setContractAddress(e.target.value)}
                           disabled={!isCorrectNetwork}
                         />
-                        <small className="form-text">💡 Leave empty to send to your own wallet</small>
+                        <small className="form-text">Leave empty to send to your own wallet</small>
                       </div>
                       <div className="form-group">
                         <label>Input Value</label>
@@ -1439,7 +1435,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         </small>
                         {validationError && (
                           <small className="form-text text-danger">
-                            ❌ {validationError}
+                            {validationError}
                           </small>
                         )}
                       </div>
@@ -1449,34 +1445,34 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           onClick={handleEncryptData}
                           disabled={loading || !selectedEncryptedType || !encryptedInputValue.trim() || !isCorrectNetwork}
                         >
-                          🔒 Encrypt Data
+                          Encrypt Data
                         </button>
                         <button 
                           className="btn btn-success"
                           onClick={handleSendEncryptedTransaction}
                           disabled={loading || !encryptedResult || !provider || !isCorrectNetwork}
                         >
-                          🚀 Send Encrypted Transaction
+                          Send Encrypted Transaction
                         </button>
                       </div>
                       {encryptedResult && (
                         <div className="encrypted-result">
-                          <h4>✅ Type-Safe Encryption Result:</h4>
+                          <h4>Type-Safe Encryption Result:</h4>
                           <div className="result-details">
                             <div className="result-section">
-                              <h5>🏷️ Type Information:</h5>
+                              <h5>Type Information:</h5>
                               <div><strong>Encrypted Type:</strong> <span className="type-badge">{encryptedResult.type}</span></div>
                               <div><strong>Original Value:</strong> <code>{encryptedResult.originalValue}</code></div>
                               <div><strong>Encoded Value:</strong> <code>{encryptedResult.encodedValue}</code></div>
                             </div>
                             <div className="result-section">
-                              <h5>🔐 Encryption Details:</h5>
+                              <h5>Encryption Details:</h5>
                               <div><strong>Encryption Method:</strong> {encryptedResult.encryption}</div>
                               <div><strong>Encrypted Output:</strong> <code className="encrypted-value">{encryptedResult.encryptedValue}</code></div>
                               <div><strong>Target Contract:</strong> <code>{encryptedResult.contractAddress}</code></div>
                             </div>
                             <div className="result-section">
-                              <h5>📊 Validation Status:</h5>
+                              <h5>Validation Status:</h5>
                               <div className="validation-status">
                                 ✅ Input validated according to Seismic type specifications
                               </div>
@@ -1494,7 +1490,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   {/* Transaction History */}
                   <div className="card transaction-card">
                     <div className="card-header">
-                      <h3 className="card-title">🕘 Transaction History</h3>
+                      <h3 className="card-title">Transaction History</h3>
                       {transactions.length > 0 && (
                         <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
                           🗑 Clear
@@ -1504,7 +1500,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                     <div className="transaction-history">
                       {transactions.length === 0 ? (
                         <div className="empty-state">
-                          <div className="empty-icon">ℹ️</div>
+                          <div className="empty-icon">i</div>
                           <p>No transactions yet. Send your first transaction to see it here.</p>
                         </div>
                       ) : (
@@ -1527,16 +1523,16 @@ Block Explorer: https://explorer-2.seismicdev.net/
                                 </span>
                                 <div className="transaction-status-section">
                                   <span className={`transaction-status status-${tx.status}`}>
-                                    {tx.status === 'pending' && '⏳ Pending'}
-                                    {tx.status === 'success' && '✅ Success'}
-                                    {tx.status === 'failed' && '❌ Failed'}
+                                    {tx.status === 'pending' && 'Pending'}
+                                    {tx.status === 'success' && 'Success'}
+                                    {tx.status === 'failed' && 'Failed'}
                                   </span>
                                   <button 
                                     className="btn-info-small"
                                     onClick={() => showTransactionInfo(tx)}
                                     title="Show transaction details"
                                   >
-                                    ℹ️
+                                    i
                                   </button>
                                 </div>
                               </div>
@@ -1545,16 +1541,15 @@ Block Explorer: https://explorer-2.seismicdev.net/
                                 <small>Amount: {tx.value} SETH</small>
                                 <small>{tx.timestamp}</small>
                                 {tx.blockNumber && <small>Block: {tx.blockNumber}</small>}
-                                {/* 🔐 НОВАЯ ИНФОРМАЦИЯ О ШИФРОВАНИИ */}
                                 {tx.encrypted && (
                                   <>
-                                    <small className="encryption-info">🔐 Encryption: {tx.encryptionType || 'Seismic TDX'}</small>
-                                    {tx.dataSize && <small className="data-info">📊 Data: {tx.dataSize}</small>}
-                                    {tx.gasUsed && <small className="gas-info">⛽ Gas: {tx.gasUsed}</small>}
+                                    <small className="encryption-info">Encryption: {tx.encryptionType || 'Seismic TDX'}</small>
+                                    {tx.dataSize && <small className="data-info">Data: {tx.dataSize}</small>}
+                                    {tx.gasUsed && <small className="gas-info">Gas: {tx.gasUsed}</small>}
                                   </>
                                 )}
                                 {!tx.encrypted && (
-                                  <small className="transparent-info">💸 Transparent Transaction</small>
+                                  <small className="transparent-info">Transparent Transaction</small>
                                 )}
                               </div>
                             </div>
@@ -1572,12 +1567,10 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 <div className="left-column">
                   {/* Encrypted Message Sender */}
                   <div className="card">
-                    <h3 className="card-title">💬 Encrypt & Send Message</h3>
-                    {!isCorrectNetwork && (
-                      <div className="network-warning">
-                        ⚠️ Warning: Encrypted messages only work on Seismic network. Please switch to Seismic.
-                      </div>
-                    )}
+                    <h3 className="card-title">Encrypt & Send Message</h3>
+                    <div className="network-warning">
+                      Warning: Encrypted messages only work on Seismic network. Please switch to Seismic.
+                    </div>
                     <div className="form-section">
                       <div className="form-group">
                         <label>Message to Encrypt</label>
@@ -1614,14 +1607,14 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           onClick={handleEncryptMessage}
                           disabled={loading || !messageToEncrypt.trim() || !isCorrectNetwork}
                         >
-                          🔒 Encrypt Message
+                          Encrypt Message
                         </button>
                         <button 
                           className="btn btn-success"
                           onClick={handleSendEncryptedMessage}
                           disabled={loading || !encryptedMessage || !provider || !isCorrectNetwork}
                         >
-                          🚀 Send to Blockchain
+                          Send to Blockchain
                         </button>
                       </div>
                     </div>
@@ -1630,7 +1623,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   {/* Encryption Result Display */}
                   {encryptedMessage && (
                     <div className="card">
-                      <h3 className="card-title">🔐 Encryption Result</h3>
+                      <h3 className="card-title">Encryption Result</h3>
                       <div className="encrypted-message-result">
                         <div className="result-section">
                           <h4>Original Message:</h4>
@@ -1662,7 +1655,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
 
                   {/* Seismic Encryption Info */}
                   <div className="card">
-                    <h3 className="card-title">🛡️ How Seismic Encryption Works</h3>
+                    <h3 className="card-title">How Seismic Encryption Works</h3>
                     <div className="info-content">
                       <div className="feature-list">
                         <div className="feature-item">
@@ -1708,7 +1701,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   {/* Message History */}
                   <div className="card transaction-card">
                     <div className="card-header">
-                      <h3 className="card-title">💬 Message History</h3>
+                      <h3 className="card-title">Message History</h3>
                       {transactions.filter(tx => tx.encryptedType === 'message').length > 0 && (
                         <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
                           🗑 Clear
@@ -1718,7 +1711,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                     <div className="transaction-history">
                       {transactions.filter(tx => tx.encryptedType === 'message').length === 0 ? (
                         <div className="empty-state">
-                          <div className="empty-icon">💬</div>
+                          <div className="empty-icon">i</div>
                           <p>No encrypted messages yet. Send your first encrypted message to see it here.</p>
                         </div>
                       ) : (
@@ -1743,16 +1736,16 @@ Block Explorer: https://explorer-2.seismicdev.net/
                                 </span>
                                 <div className="transaction-status-section">
                                   <span className={`transaction-status status-${tx.status}`}>
-                                    {tx.status === 'pending' && '⏳ Pending'}
-                                    {tx.status === 'success' && '✅ Success'}
-                                    {tx.status === 'failed' && '❌ Failed'}
+                                    {tx.status === 'pending' && 'Pending'}
+                                    {tx.status === 'success' && 'Success'}
+                                    {tx.status === 'failed' && 'Failed'}
                                   </span>
                                   <button 
                                     className="btn-info-small"
                                     onClick={() => showTransactionInfo(tx)}
                                     title="Show message details"
                                   >
-                                    ℹ️
+                                    i
                                   </button>
                                 </div>
                               </div>
@@ -1772,7 +1765,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
 
                   {/* Quick Message Templates */}
                   <div className="card">
-                    <h3 className="card-title">📝 Quick Message Templates</h3>
+                    <h3 className="card-title">Quick Message Templates</h3>
                     <div className="template-section">
                       <p>Click on a template to use it:</p>
                       <div className="template-buttons">
@@ -1820,7 +1813,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
           <div className="modal-content transaction-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h3 className="modal-title">
-                {selectedTransaction.encrypted ? '🔐' : '💸'} Transaction Details
+                {selectedTransaction.encrypted ? 'Encrypted' : 'Regular'} Transaction Details
               </h3>
               <button className="modal-close-btn" onClick={hideTransactionInfo}>
                 ✕
@@ -1847,10 +1840,10 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   <div className="detail-row">
                     <span className="detail-label">Status:</span>
                     <span className={`detail-value status-${selectedTransaction.status}`}>
-                      {selectedTransaction.status === 'pending' && '⏳ Pending'}
-                      {selectedTransaction.status === 'success' && '✅ Success'}
-                      {selectedTransaction.status === 'failed' && '❌ Failed'}
-                    </span>
+                                  {selectedTransaction.status === 'pending' && 'Pending'}
+                                  {selectedTransaction.status === 'success' && 'Success'}
+                                  {selectedTransaction.status === 'failed' && 'Failed'}
+                                </span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Timestamp:</span>
@@ -1859,8 +1852,8 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   <div className="detail-row">
                     <span className="detail-label">Type:</span>
                     <span className="detail-value">
-                      {selectedTransaction.encrypted ? 'Encrypted Transaction' : 'Regular Transaction'}
-                    </span>
+                                  {selectedTransaction.encrypted ? 'Encrypted' : 'Regular'} Transaction
+                                </span>
                   </div>
                 </div>
               </div>
@@ -1920,10 +1913,10 @@ Block Explorer: https://explorer-2.seismicdev.net/
                     <div className="encryption-benefits">
                       <h5>🛡️ Security Features:</h5>
                       <ul>
-                        <li>✅ Hardware-level encryption using Intel TDX</li>
-                        <li>✅ Data remains private on public blockchain</li>
-                        <li>✅ Tamper-resistant secure enclaves</li>
-                        <li>✅ Transparent smart contract execution</li>
+                        <li>Hardware-level encryption using Intel TDX</li>
+                        <li>Data remains private on public blockchain</li>
+                        <li>Tamper-resistant secure enclaves</li>
+                        <li>Transparent smart contract execution</li>
                       </ul>
                     </div>
                   </div>
