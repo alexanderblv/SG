@@ -767,7 +767,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
             </div>
           </div>
         ) : (
-          <div className="content-grid">
+          <div className="content-container">
             {/* Tab Navigation */}
             <div className="tabs-navigation">
               <button 
