@@ -148,13 +148,21 @@ body {
   align-items: stretch;
 }
 
-/* Ensure the right column takes full height and Transaction History card fills it */
+/* Override right column to remove gaps and fill full height */
 .right-column {
+  gap: 0; /* Remove gap to use full available height */
+}
+
+/* Make transaction card fill ALL available height in right column */
+.transaction-card {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  height: 100%;
+  height: calc(100vh - 200px); /* Force full height minus header/margins */
+  max-height: none;
+  align-self: stretch;
+  justify-self: stretch;
   padding: 0;
   margin: 0;
 }
@@ -566,35 +574,23 @@ body {
 }
 
 /* Make transaction card stretch to fill available space */
-.transaction-card {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  height: 100%;
-  max-height: none;
-  align-self: stretch;
-  justify-self: stretch;
-  padding: 0;
-  margin: 0;
-}
-
 .transaction-card .card-header {
-  padding: 0.75rem 1rem; /* Minimal padding for header only */
+  padding: 0.75rem 1rem;
   margin: 0;
   border-bottom: 1px solid #e0e6ed;
-  background: white; /* Ensure header has background */
+  background: white;
+  flex-shrink: 0;
 }
 
 .transaction-card .transaction-history {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 400px;
-  max-height: calc(100vh - 200px);
+  min-height: 0;
+  max-height: none;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 0; /* Remove ALL padding */
+  padding: 0;
   margin: 0;
 }
 
@@ -606,7 +602,7 @@ body {
   flex: 1;
   overflow-y: visible;
   overflow-x: hidden;
-  padding: 1rem; /* Add minimal padding only for content readability */
+  padding: 1rem;
   height: 100%;
   min-height: 0;
   margin: 0;
