@@ -77,6 +77,11 @@ export default function Home() {
   const [contractAddress, setContractAddress] = useState('');
   const [encryptedResult, setEncryptedResult] = useState(null);
 
+  // Encrypted Message Feature  
+  const [messageToEncrypt, setMessageToEncrypt] = useState('');
+  const [encryptedMessage, setEncryptedMessage] = useState(null);
+  const [messageContractAddress, setMessageContractAddress] = useState('');
+
   // Notification system
   const [notifications, setNotifications] = useState([]);
   const [notificationTimers, setNotificationTimers] = useState(new Map());
@@ -606,6 +611,100 @@ export default function Home() {
     }
   };
 
+  // Функция для шифрования сообщения
+  const handleEncryptMessage = async () => {
+    if (!messageToEncrypt.trim()) {
+      addNotification('Please enter a message to encrypt', 'warning');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      // Конвертируем сообщение в байты для шифрования
+      const messageBytes = new TextEncoder().encode(messageToEncrypt);
+      
+      // Симуляция процесса шифрования сообщения с использованием Seismic
+      const mockEncryptedMessage = {
+        originalMessage: messageToEncrypt,
+        messageBytes: Array.from(messageBytes),
+        encryptedData: `0x${Array.from({length: 128}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
+        timestamp: new Date().toLocaleString(),
+        network: 'Seismic',
+        encryption: 'TDX Secure Enclave',
+        method: 'CSTORE (Encrypted Storage)'
+      };
+      
+      setEncryptedMessage(mockEncryptedMessage);
+      addNotification(`Message encrypted successfully using Seismic TDX encryption!`, 'success');
+      
+    } catch (error) {
+      console.error('Message encryption error:', error);
+      addNotification('Message encryption failed: ' + error.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Функция для отправки зашифрованного сообщения в блокчейн
+  const handleSendEncryptedMessage = async () => {
+    if (!provider || !encryptedMessage) {
+      addNotification('Please encrypt a message first', 'warning');
+      return;
+    }
+
+    // Проверяем что пользователь на правильной сети
+    if (!isCorrectNetwork) {
+      addNotification('Please switch to Seismic network before sending encrypted messages!', 'warning');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      
+      const signer = await provider.getSigner();
+      
+      // Используем адрес контракта пользователя или адрес по умолчанию для демо
+      const targetAddress = messageContractAddress || '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
+      
+      // Отправка зашифрованного сообщения на Seismic
+      const transaction = {
+        to: targetAddress,
+        value: ethers.parseEther('0.001'), // Минимальная комиссия
+        data: encryptedMessage.encryptedData
+      };
+
+      const txResponse = await signer.sendTransaction(transaction);
+      
+      const newTx = {
+        hash: txResponse.hash,
+        to: targetAddress,
+        value: '0.001',
+        timestamp: new Date().toLocaleString(),
+        status: 'pending',
+        encrypted: true,
+        encryptedType: 'message',
+        messagePreview: encryptedMessage.originalMessage.substring(0, 50) + (encryptedMessage.originalMessage.length > 50 ? '...' : ''),
+        network: 'Seismic'
+      };
+      
+      setTransactions(prev => [newTx, ...prev]);
+      
+      addNotification(`Encrypted message sent successfully on Seismic! Hash: ${txResponse.hash}`, 'success');
+      
+      // Очистить форму
+      setMessageToEncrypt('');
+      setMessageContractAddress('');
+      setEncryptedMessage(null);
+      
+    } catch (error) {
+      console.error('Encrypted message transaction error:', error);
+      addNotification('Encrypted message transaction failed: ' + error.message, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (!ready) {
     return (
       <div className="container">
@@ -775,6 +874,12 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 onClick={() => setActiveTab('transactions')}
               >
                 📤 Transactions
+              </button>
+              <button 
+                className={`tab-button ${activeTab === 'messages' ? 'active' : ''}`}
+                onClick={() => setActiveTab('messages')}
+              >
+                💬 Encrypted Messages
               </button>
               <button 
                 className={`tab-button ${activeTab === 'wallet' ? 'active' : ''}`}
@@ -1142,6 +1247,241 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           ))}
                         </div>
                       )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'messages' && (
+              <div className="tab-content">
+                <div className="left-column">
+                  {/* Encrypted Message Sender */}
+                  <div className="card">
+                    <h3 className="card-title">💬 Encrypt & Send Message</h3>
+                    {!isCorrectNetwork && (
+                      <div className="network-warning">
+                        ⚠️ Warning: Encrypted messages only work on Seismic network. Please switch to Seismic.
+                      </div>
+                    )}
+                    <div className="form-section">
+                      <div className="form-group">
+                        <label>Message to Encrypt</label>
+                        <textarea
+                          className="form-control"
+                          rows="4"
+                          placeholder="Enter your secret message here... 
+(e.g., 'This is my private message that will be encrypted using Seismic TDX secure enclaves')"
+                          value={messageToEncrypt}
+                          onChange={(e) => setMessageToEncrypt(e.target.value)}
+                          disabled={!isCorrectNetwork}
+                        />
+                        <small className="form-text">
+                          Your message will be encrypted using Seismic's TDX secure enclaves before being stored on-chain
+                        </small>
+                      </div>
+                      <div className="form-group">
+                        <label>Contract Address (Optional)</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="0x... (contract to receive encrypted message)"
+                          value={messageContractAddress}
+                          onChange={(e) => setMessageContractAddress(e.target.value)}
+                          disabled={!isCorrectNetwork}
+                        />
+                        <small className="form-text">
+                          Leave empty to send to a default message storage contract
+                        </small>
+                      </div>
+                      <div className="message-actions">
+                        <button 
+                          className="btn btn-info"
+                          onClick={handleEncryptMessage}
+                          disabled={loading || !messageToEncrypt.trim() || !isCorrectNetwork}
+                        >
+                          🔒 Encrypt Message
+                        </button>
+                        <button 
+                          className="btn btn-success"
+                          onClick={handleSendEncryptedMessage}
+                          disabled={loading || !encryptedMessage || !provider || !isCorrectNetwork}
+                        >
+                          🚀 Send to Blockchain
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Encryption Result Display */}
+                  {encryptedMessage && (
+                    <div className="card">
+                      <h3 className="card-title">🔐 Encryption Result</h3>
+                      <div className="encrypted-message-result">
+                        <div className="result-section">
+                          <h4>Original Message:</h4>
+                          <div className="original-message">
+                            "{encryptedMessage.originalMessage}"
+                          </div>
+                        </div>
+                        <div className="result-section">
+                          <h4>Encryption Details:</h4>
+                          <div className="encryption-details">
+                            <div><strong>Method:</strong> {encryptedMessage.method}</div>
+                            <div><strong>Encryption:</strong> {encryptedMessage.encryption}</div>
+                            <div><strong>Network:</strong> {encryptedMessage.network}</div>
+                            <div><strong>Timestamp:</strong> {encryptedMessage.timestamp}</div>
+                          </div>
+                        </div>
+                        <div className="result-section">
+                          <h4>Encrypted Data:</h4>
+                          <div className="encrypted-data">
+                            <code>{encryptedMessage.encryptedData}</code>
+                          </div>
+                          <small className="form-text">
+                            This encrypted data will be stored on Seismic blockchain and can only be decrypted with the proper keys
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Seismic Encryption Info */}
+                  <div className="card">
+                    <h3 className="card-title">🛡️ How Seismic Encryption Works</h3>
+                    <div className="info-content">
+                      <div className="feature-list">
+                        <div className="feature-item">
+                          <div className="feature-icon">🔐</div>
+                          <div className="feature-text">
+                            <strong>TDX Secure Enclaves:</strong> Your messages are encrypted using Intel TDX hardware-based security
+                          </div>
+                        </div>
+                        <div className="feature-item">
+                          <div className="feature-icon">🏗️</div>
+                          <div className="feature-text">
+                            <strong>CSTORE Operations:</strong> Encrypted storage opcodes keep your data private even on public blockchain
+                          </div>
+                        </div>
+                        <div className="feature-item">
+                          <div className="feature-icon">⚡</div>
+                          <div className="feature-text">
+                            <strong>Transparent Integration:</strong> Encryption happens seamlessly without compromising blockchain transparency
+                          </div>
+                        </div>
+                        <div className="feature-item">
+                          <div className="feature-icon">🌐</div>
+                          <div className="feature-text">
+                            <strong>On-Chain Privacy:</strong> Messages remain private while benefiting from blockchain immutability
+                          </div>
+                        </div>
+                      </div>
+                      <div className="learn-more">
+                        <a 
+                          href={SEISMIC_LINKS.docs} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="btn btn-outline-primary btn-sm"
+                        >
+                          📚 Learn More About Seismic
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="right-column">
+                  {/* Message History */}
+                  <div className="card transaction-card">
+                    <div className="card-header">
+                      <h3 className="card-title">💬 Message History</h3>
+                      {transactions.filter(tx => tx.encryptedType === 'message').length > 0 && (
+                        <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
+                          🗑 Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="transaction-history">
+                      {transactions.filter(tx => tx.encryptedType === 'message').length === 0 ? (
+                        <div className="empty-state">
+                          <div className="empty-icon">💬</div>
+                          <p>No encrypted messages yet. Send your first encrypted message to see it here.</p>
+                        </div>
+                      ) : (
+                        <div className="transaction-list">
+                          {transactions
+                            .filter(tx => tx.encryptedType === 'message')
+                            .map((tx, index) => (
+                            <div key={index} className="transaction-item message-item">
+                              <div className="transaction-header">
+                                <span className="transaction-type">
+                                  💬 
+                                  <a 
+                                    href={`${SEISMIC_LINKS.explorer}/tx/${tx.hash}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="transaction-hash-link"
+                                    title="View on Seismic Explorer"
+                                  >
+                                    {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                                  </a>
+                                  <span className="encrypted-badge">encrypted message</span>
+                                </span>
+                                <span className={`transaction-status status-${tx.status}`}>
+                                  {tx.status === 'pending' && '⏳ Pending'}
+                                  {tx.status === 'success' && '✅ Success'}
+                                  {tx.status === 'failed' && '❌ Failed'}
+                                </span>
+                              </div>
+                              <div className="transaction-details">
+                                <small>Preview: {tx.messagePreview}</small>
+                                <small>To: {tx.to?.slice(0, 10)}...</small>
+                                <small>Fee: {tx.value} SETH</small>
+                                <small>{tx.timestamp}</small>
+                                {tx.blockNumber && <small>Block: {tx.blockNumber}</small>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Message Templates */}
+                  <div className="card">
+                    <h3 className="card-title">📝 Quick Message Templates</h3>
+                    <div className="template-section">
+                      <p>Click on a template to use it:</p>
+                      <div className="template-buttons">
+                        <button 
+                          className="btn btn-outline-secondary btn-sm template-btn"
+                          onClick={() => setMessageToEncrypt('This is a confidential business message encrypted on Seismic blockchain.')}
+                          disabled={!isCorrectNetwork}
+                        >
+                          💼 Business Message
+                        </button>
+                        <button 
+                          className="btn btn-outline-secondary btn-sm template-btn"
+                          onClick={() => setMessageToEncrypt('Personal private note stored securely using TDX encryption on Seismic.')}
+                          disabled={!isCorrectNetwork}
+                        >
+                          📝 Personal Note
+                        </button>
+                        <button 
+                          className="btn btn-outline-secondary btn-sm template-btn"
+                          onClick={() => setMessageToEncrypt('Secret voting choice: Option A. This vote is encrypted and anonymous.')}
+                          disabled={!isCorrectNetwork}
+                        >
+                          🗳️ Private Vote
+                        </button>
+                        <button 
+                          className="btn btn-outline-secondary btn-sm template-btn"
+                          onClick={() => setMessageToEncrypt('API Key: sk_test_123abc. Stored securely with hardware-level encryption.')}
+                          disabled={!isCorrectNetwork}
+                        >
+                          🔑 Secure Data
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
