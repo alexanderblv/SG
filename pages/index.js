@@ -93,6 +93,10 @@ export default function Home() {
   // Tab system
   const [activeTab, setActiveTab] = useState('transactions');
 
+  // Transaction Info Modal
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [showTransactionModal, setShowTransactionModal] = useState(false);
+
   // Add notification function
   const addNotification = (message, type = 'info') => {
     const id = Date.now();
@@ -775,14 +779,20 @@ export default function Home() {
 
   const clearHistory = () => {
     setTransactions([]);
-    try {
-      localStorage.removeItem(TRANSACTIONS_STORAGE_KEY);
-    } catch (error) {
-      console.error('Error clearing transactions from localStorage:', error);
-    }
+    addNotification('Transaction history cleared successfully', 'success');
   };
 
-  // Функция для шифрования сообщения
+  // Transaction Info Modal Functions
+  const showTransactionInfo = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowTransactionModal(true);
+  };
+
+  const hideTransactionInfo = () => {
+    setSelectedTransaction(null);
+    setShowTransactionModal(false);
+  };
+
   const handleEncryptMessage = async () => {
     if (!messageToEncrypt.trim()) {
       addNotification('Please enter a message to encrypt', 'warning');
@@ -1465,11 +1475,20 @@ Block Explorer: https://explorer-2.seismicdev.net/
                                   </a>
                                   {tx.encryptedType && <span className="encrypted-badge">{tx.encryptedType}</span>}
                                 </span>
-                                <span className={`transaction-status status-${tx.status}`}>
-                                  {tx.status === 'pending' && '⏳ Pending'}
-                                  {tx.status === 'success' && '✅ Success'}
-                                  {tx.status === 'failed' && '❌ Failed'}
-                                </span>
+                                <div className="transaction-status-section">
+                                  <span className={`transaction-status status-${tx.status}`}>
+                                    {tx.status === 'pending' && '⏳ Pending'}
+                                    {tx.status === 'success' && '✅ Success'}
+                                    {tx.status === 'failed' && '❌ Failed'}
+                                  </span>
+                                  <button 
+                                    className="btn-info-small"
+                                    onClick={() => showTransactionInfo(tx)}
+                                    title="Show transaction details"
+                                  >
+                                    ℹ️
+                                  </button>
+                                </div>
                               </div>
                               <div className="transaction-details">
                                 <small>To: {tx.to?.slice(0, 10)}...</small>
@@ -1672,11 +1691,20 @@ Block Explorer: https://explorer-2.seismicdev.net/
                                   </a>
                                   <span className="encrypted-badge">encrypted message</span>
                                 </span>
-                                <span className={`transaction-status status-${tx.status}`}>
-                                  {tx.status === 'pending' && '⏳ Pending'}
-                                  {tx.status === 'success' && '✅ Success'}
-                                  {tx.status === 'failed' && '❌ Failed'}
-                                </span>
+                                <div className="transaction-status-section">
+                                  <span className={`transaction-status status-${tx.status}`}>
+                                    {tx.status === 'pending' && '⏳ Pending'}
+                                    {tx.status === 'success' && '✅ Success'}
+                                    {tx.status === 'failed' && '❌ Failed'}
+                                  </span>
+                                  <button 
+                                    className="btn-info-small"
+                                    onClick={() => showTransactionInfo(tx)}
+                                    title="Show message details"
+                                  >
+                                    ℹ️
+                                  </button>
+                                </div>
                               </div>
                               <div className="transaction-details">
                                 <small>Preview: {tx.messagePreview}</small>
@@ -1735,6 +1763,163 @@ Block Explorer: https://explorer-2.seismicdev.net/
           </div>
         )}
       </main>
+
+      {/* Transaction Info Modal */}
+      {showTransactionModal && selectedTransaction && (
+        <div className="modal-overlay" onClick={hideTransactionInfo}>
+          <div className="modal-content transaction-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3 className="modal-title">
+                {selectedTransaction.encrypted ? '🔐' : '💸'} Transaction Details
+              </h3>
+              <button className="modal-close-btn" onClick={hideTransactionInfo}>
+                ✕
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div className="transaction-detail-section">
+                <h4>Basic Information</h4>
+                <div className="detail-grid">
+                  <div className="detail-row">
+                    <span className="detail-label">Transaction Hash:</span>
+                    <span className="detail-value">
+                      <a 
+                        href={`${SEISMIC_LINKS.explorer}/tx/${selectedTransaction.hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hash-link"
+                      >
+                        {selectedTransaction.hash}
+                      </a>
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Status:</span>
+                    <span className={`detail-value status-${selectedTransaction.status}`}>
+                      {selectedTransaction.status === 'pending' && '⏳ Pending'}
+                      {selectedTransaction.status === 'success' && '✅ Success'}
+                      {selectedTransaction.status === 'failed' && '❌ Failed'}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Timestamp:</span>
+                    <span className="detail-value">{selectedTransaction.timestamp}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Type:</span>
+                    <span className="detail-value">
+                      {selectedTransaction.encrypted ? 'Encrypted Transaction' : 'Regular Transaction'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="transaction-detail-section">
+                <h4>Transaction Data</h4>
+                <div className="detail-grid">
+                  <div className="detail-row">
+                    <span className="detail-label">To Address:</span>
+                    <span className="detail-value hash-like">{selectedTransaction.to}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Amount:</span>
+                    <span className="detail-value">{selectedTransaction.value} SETH</span>
+                  </div>
+                  {selectedTransaction.blockNumber && (
+                    <div className="detail-row">
+                      <span className="detail-label">Block Number:</span>
+                      <span className="detail-value">{selectedTransaction.blockNumber}</span>
+                    </div>
+                  )}
+                  {selectedTransaction.gasUsed && (
+                    <div className="detail-row">
+                      <span className="detail-label">Gas Used:</span>
+                      <span className="detail-value">{selectedTransaction.gasUsed}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {selectedTransaction.encrypted && (
+                <div className="transaction-detail-section">
+                  <h4>🔐 Encryption Information</h4>
+                  <div className="detail-grid">
+                    <div className="detail-row">
+                      <span className="detail-label">Encryption Type:</span>
+                      <span className="detail-value">{selectedTransaction.encryptionType || 'Seismic TDX'}</span>
+                    </div>
+                    {selectedTransaction.encryptedType && (
+                      <div className="detail-row">
+                        <span className="detail-label">Data Type:</span>
+                        <span className="detail-value">{selectedTransaction.encryptedType}</span>
+                      </div>
+                    )}
+                    {selectedTransaction.dataSize && (
+                      <div className="detail-row">
+                        <span className="detail-label">Data Size:</span>
+                        <span className="detail-value">{selectedTransaction.dataSize}</span>
+                      </div>
+                    )}
+                    {selectedTransaction.messagePreview && (
+                      <div className="detail-row">
+                        <span className="detail-label">Message Preview:</span>
+                        <span className="detail-value">{selectedTransaction.messagePreview}</span>
+                      </div>
+                    )}
+                    <div className="encryption-benefits">
+                      <h5>🛡️ Security Features:</h5>
+                      <ul>
+                        <li>✅ Hardware-level encryption using Intel TDX</li>
+                        <li>✅ Data remains private on public blockchain</li>
+                        <li>✅ Tamper-resistant secure enclaves</li>
+                        <li>✅ Transparent smart contract execution</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="transaction-detail-section">
+                <h4>Network Information</h4>
+                <div className="detail-grid">
+                  <div className="detail-row">
+                    <span className="detail-label">Network:</span>
+                    <span className="detail-value">Seismic Devnet</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Explorer:</span>
+                    <span className="detail-value">
+                      <a 
+                        href={`${SEISMIC_LINKS.explorer}/tx/${selectedTransaction.hash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="explorer-link"
+                      >
+                        View on Seismic Explorer →
+                      </a>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={hideTransactionInfo}>
+                Close
+              </button>
+              <a 
+                href={`${SEISMIC_LINKS.explorer}/tx/${selectedTransaction.hash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+              >
+                View on Explorer
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
