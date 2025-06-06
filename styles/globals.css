@@ -124,13 +124,16 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  min-height: calc(100vh - 140px); /* Учитываем высоту header и padding */
+  height: 100%;
+  align-items: stretch;
 }
 
 .content-container {
   max-width: 100%;
   width: 100%;
-  min-height: calc(100vh - 140px);
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 200px);
 }
 
 .left-column,
@@ -138,7 +141,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-height: 0; /* Позволяет flex детям сжиматься */
+  height: 100%;
 }
 
 .welcome-section {
@@ -539,27 +542,16 @@ body {
 
 /* Transaction History */
 .transaction-history {
-  flex: 1;
   overflow-y: auto;
+  flex: 1;
   min-height: 0;
 }
 
-/* Для полного растяжения карточки Transaction History */
-.right-column .card:has(.transaction-history) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.right-column .card:has(.transaction-history) .transaction-history {
-  flex: 1;
-}
-
-/* Альтернативный способ для совместимости с браузерами без поддержки :has() */
+/* Make transaction card stretch to fill available space */
 .transaction-card {
-  flex: 1;
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .transaction-card .transaction-history {
@@ -703,12 +695,6 @@ body {
   
   .right-column {
     order: -1;
-  }
-  
-  .transaction-history {
-    flex: 1;
-    overflow-y: auto;
-    min-height: 300px;
   }
 }
 
@@ -1493,7 +1479,7 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  min-height: calc(100vh - 180px); /* Увеличиваем минимальную высоту */
+  min-height: 400px;
 }
 
 .tab-content .left-column,
@@ -1501,7 +1487,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-height: 0; /* Позволяет flex детям сжиматься */
 }
 
 /* Quick Actions */
@@ -1554,7 +1539,6 @@ body {
   .tab-content {
     grid-template-columns: 1fr;
     gap: 1.5rem;
-    min-height: calc(100vh - 220px);
   }
 }
 
