@@ -81,6 +81,9 @@ export default function Home() {
   const [notifications, setNotifications] = useState([]);
   const [notificationTimers, setNotificationTimers] = useState(new Map());
 
+  // Tab system
+  const [activeTab, setActiveTab] = useState('transactions');
+
   // Add notification function
   const addNotification = (message, type = 'info') => {
     const id = Date.now();
@@ -765,302 +768,385 @@ Block Explorer: https://explorer-2.seismicdev.net/
           </div>
         ) : (
           <div className="content-grid">
-            <div className="left-column">
-              {/* Wallet Information */}
-              <div className="card">
-                <h3 className="card-title">🔒 Wallet Information</h3>
-                <div className="info-section">
-                  <div className="info-item">
-                    <label>Your Address</label>
-                    <div className="info-value address-display">
-                      {user?.wallet?.address || 'Connect wallet to see address'}
-                      <button className="copy-btn" onClick={() => navigator.clipboard.writeText(user?.wallet?.address)}>
-                        📋
-                      </button>
+            {/* Tab Navigation */}
+            <div className="tabs-navigation">
+              <button 
+                className={`tab-button ${activeTab === 'transactions' ? 'active' : ''}`}
+                onClick={() => setActiveTab('transactions')}
+              >
+                📤 Transactions
+              </button>
+              <button 
+                className={`tab-button ${activeTab === 'wallet' ? 'active' : ''}`}
+                onClick={() => setActiveTab('wallet')}
+              >
+                🔒 Wallet & Network
+              </button>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'wallet' && (
+              <div className="tab-content">
+                <div className="left-column">
+                  {/* Wallet Information */}
+                  <div className="card">
+                    <h3 className="card-title">🔒 Wallet Information</h3>
+                    <div className="info-section">
+                      <div className="info-item">
+                        <label>Your Address</label>
+                        <div className="info-value address-display">
+                          {user?.wallet?.address || 'Connect wallet to see address'}
+                          <button className="copy-btn" onClick={() => navigator.clipboard.writeText(user?.wallet?.address)}>
+                            📋
+                          </button>
+                        </div>
+                      </div>
+                      <div className="info-item">
+                        <label>Balance (SETH)</label>
+                        <div className="info-value balance-display">
+                          {balance}
+                          <button className="refresh-btn" onClick={() => user?.wallet?.address && updateBalance(user.wallet.address)}>
+                            🔄
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="info-item">
-                    <label>Balance (SETH)</label>
-                    <div className="info-value balance-display">
-                      {balance}
-                      <button className="refresh-btn" onClick={() => user?.wallet?.address && updateBalance(user.wallet.address)}>
-                        🔄
-                      </button>
+
+                  {/* Seismic Network Info */}
+                  <div className="card seismic-info-card">
+                    <h3 className="card-title">⚡ Seismic Network Resources</h3>
+                    <div className="seismic-resources">
+                      <div className="resource-section">
+                        <div className="network-status-detailed">
+                          <div className="status-row">
+                            <span className="status-label">Network:</span>
+                            <span className={`status-value ${isCorrectNetwork ? 'connected' : 'disconnected'}`}>
+                              {isCorrectNetwork ? 'Seismic Devnet ✅' : (currentNetwork?.name || 'Not Connected ❌')}
+                            </span>
+                          </div>
+                          <div className="status-row">
+                            <span className="status-label">Chain ID:</span>
+                            <span className="status-value">{SEISMIC_NETWORK.id}</span>
+                          </div>
+                          <div className="status-row">
+                            <span className="status-label">Currency:</span>
+                            <span className="status-value">{SEISMIC_NETWORK.nativeCurrency.symbol}</span>
+                          </div>
+                        </div>
+                        
+                        {balance === '0.0' && isCorrectNetwork && (
+                          <div className="low-balance-warning">
+                            💡 <strong>Need test tokens?</strong> Get free SETH from the faucet below!
+                          </div>
+                        )}
+                        
+                        <div className="resource-links">
+                          <a 
+                            href={SEISMIC_LINKS.faucet} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-success btn-sm resource-btn"
+                          >
+                            🚰 Get Test Tokens (Faucet)
+                          </a>
+                          <a 
+                            href={SEISMIC_LINKS.explorer} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-info btn-sm resource-btn"
+                          >
+                            🔍 Block Explorer
+                          </a>
+                          <a 
+                            href={SEISMIC_LINKS.docs} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-primary btn-sm resource-btn"
+                          >
+                            📚 Documentation
+                          </a>
+                          <a 
+                            href={SEISMIC_LINKS.devnet} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-secondary btn-sm resource-btn"
+                          >
+                            🛠 Devnet Guide
+                          </a>
+                        </div>
+                        
+                        {!isCorrectNetwork && (
+                          <div className="network-action">
+                            <button 
+                              className="btn btn-warning btn-block"
+                              onClick={() => switchToSeismic(false)}
+                              disabled={loading}
+                            >
+                              {loading ? 'Switching to Seismic...' : '🔄 Switch to Seismic Network'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Seismic Network Info */}
-              <div className="card seismic-info-card">
-                <h3 className="card-title">⚡ Seismic Network Resources</h3>
-                <div className="seismic-resources">
-                  <div className="resource-section">
-                    <div className="network-status-detailed">
-                      <div className="status-row">
-                        <span className="status-label">Network:</span>
-                        <span className={`status-value ${isCorrectNetwork ? 'connected' : 'disconnected'}`}>
-                          {isCorrectNetwork ? 'Seismic Devnet ✅' : (currentNetwork?.name || 'Not Connected ❌')}
-                        </span>
+                <div className="right-column">
+                  {/* Network Information Card */}
+                  <div className="card">
+                    <h3 className="card-title">🌐 Network Information</h3>
+                    <div className="info-section">
+                      <div className="info-item">
+                        <label>Current Network</label>
+                        <div className="info-value">
+                          {currentNetwork?.name || 'Unknown'}
+                        </div>
                       </div>
-                      <div className="status-row">
-                        <span className="status-label">Chain ID:</span>
-                        <span className="status-value">{SEISMIC_NETWORK.id}</span>
+                      <div className="info-item">
+                        <label>Chain ID</label>
+                        <div className="info-value">
+                          {currentNetwork?.id || 'Unknown'}
+                        </div>
                       </div>
-                      <div className="status-row">
-                        <span className="status-label">Currency:</span>
-                        <span className="status-value">{SEISMIC_NETWORK.nativeCurrency.symbol}</span>
+                      <div className="info-item">
+                        <label>Status</label>
+                        <div className={`info-value ${isCorrectNetwork ? 'text-success' : 'text-danger'}`}>
+                          {isCorrectNetwork ? '✅ Connected to Seismic' : '❌ Wrong Network'}
+                        </div>
                       </div>
                     </div>
-                    
-                    {balance === '0.0' && isCorrectNetwork && (
-                      <div className="low-balance-warning">
-                        💡 <strong>Need test tokens?</strong> Get free SETH from the faucet below!
-                      </div>
-                    )}
-                    
-                    <div className="resource-links">
-                      <a 
-                        href={SEISMIC_LINKS.faucet} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="btn btn-success btn-sm resource-btn"
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className="card">
+                    <h3 className="card-title">⚡ Quick Actions</h3>
+                    <div className="quick-actions">
+                      <button 
+                        className="btn btn-primary btn-block"
+                        onClick={() => user?.wallet?.address && updateBalance(user.wallet.address)}
+                        disabled={loading}
                       >
-                        🚰 Get Test Tokens (Faucet)
-                      </a>
-                      <a 
-                        href={SEISMIC_LINKS.explorer} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="btn btn-info btn-sm resource-btn"
-                      >
-                        🔍 Block Explorer
-                      </a>
-                      <a 
-                        href={SEISMIC_LINKS.docs} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="btn btn-outline-primary btn-sm resource-btn"
-                      >
-                        📚 Documentation
-                      </a>
-                      <a 
-                        href={SEISMIC_LINKS.devnet} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="btn btn-outline-secondary btn-sm resource-btn"
-                      >
-                        🛠 Devnet Guide
-                      </a>
-                    </div>
-                    
-                    {!isCorrectNetwork && (
-                      <div className="network-action">
+                        🔄 Refresh Balance
+                      </button>
+                      {!isCorrectNetwork && (
                         <button 
                           className="btn btn-warning btn-block"
                           onClick={() => switchToSeismic(false)}
                           disabled={loading}
                         >
-                          {loading ? 'Switching to Seismic...' : '🔄 Switch to Seismic Network'}
+                          🔄 Switch to Seismic
                         </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Send Transaction */}
-              <div className="card">
-                <h3 className="card-title">📤 Send Transaction</h3>
-                {!isCorrectNetwork && (
-                  <div className="network-warning">
-                    ⚠️ Warning: You are not connected to Seismic network. Please switch to Seismic before sending transactions.
-                  </div>
-                )}
-                <div className="form-section">
-                  <div className="form-group">
-                    <label>Recipient Address</label>
-                    <div className="input-group">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="0x... (Enter the recipient's Ethereum address)"
-                        value={recipientAddress}
-                        onChange={(e) => setRecipientAddress(e.target.value)}
-                        disabled={!isCorrectNetwork}
-                      />
+                      )}
                       <button 
-                        className="btn btn-outline-info btn-sm input-helper"
-                        onClick={() => {
-                          const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
-                          setRecipientAddress(testAddress);
-                        }}
-                        disabled={!isCorrectNetwork}
-                        title="Use test address for demo"
+                        className="btn btn-outline-primary btn-block"
+                        onClick={() => setActiveTab('transactions')}
                       >
-                        🧪 Test Address
+                        📤 Go to Transactions
                       </button>
                     </div>
-                    <small className="form-text">Tip: Use the test address button for demo transactions</small>
                   </div>
-                  <div className="form-group">
-                    <label>Amount (SETH)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      placeholder="0.0 (Amount to send in SETH)"
-                      step="0.001"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      disabled={!isCorrectNetwork}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <div className="form-check">
-                      <input
-                        type="checkbox"
-                        className="form-check-input"
-                        checked={enableEncryption}
-                        onChange={(e) => setEnableEncryption(e.target.checked)}
-                        disabled={!isCorrectNetwork}
-                      />
-                      <label className="form-check-label">
-                        Enable Seismic Encryption
-                      </label>
-                      <small className="form-text">Use Seismic's privacy features for this transaction</small>
-                    </div>
-                  </div>
-                  <button 
-                    className="btn btn-primary btn-block"
-                    onClick={handleSendTransaction}
-                    disabled={loading || !provider || !isCorrectNetwork}
-                  >
-                    {loading ? 'Sending...' : '📤 Send Transaction on Seismic'}
-                  </button>
                 </div>
               </div>
+            )}
 
-              {/* Encrypted Types Demo */}
-              <div className="card">
-                <h3 className="card-title">🔐 Encrypted Types Demo</h3>
-                {!isCorrectNetwork && (
-                  <div className="network-warning">
-                    ⚠️ Warning: Encrypted transactions only work on Seismic network. Please switch to Seismic.
-                  </div>
-                )}
-                <div className="form-section">
-                  <div className="form-group">
-                    <label>Select Encrypted Type</label>
-                    <select
-                      className="form-control encrypted-type-select"
-                      value={selectedEncryptedType}
-                      onChange={(e) => setSelectedEncryptedType(e.target.value)}
-                      disabled={!isCorrectNetwork}
-                    >
-                      <option value="">Choose type...</option>
-                      {encryptedTypes.map((type) => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="form-group">
-                    <label>Contract Address</label>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="0x... (contract address for encrypted transaction)"
-                      value={contractAddress}
-                      onChange={(e) => setContractAddress(e.target.value)}
-                      disabled={!isCorrectNetwork}
-                    />
-                  </div>
-                  <div className="encrypted-actions">
-                    <button 
-                      className="btn btn-info"
-                      onClick={handleEncryptData}
-                      disabled={loading || !selectedEncryptedType || !contractAddress || !isCorrectNetwork}
-                    >
-                      🔒 Encrypt Data
-                    </button>
-                    <button 
-                      className="btn btn-success"
-                      onClick={handleSendEncryptedTransaction}
-                      disabled={loading || !encryptedResult || !provider || !isCorrectNetwork}
-                    >
-                      🚀 Send Encrypted Transaction
-                    </button>
-                  </div>
-                  {encryptedResult && (
-                    <div className="encrypted-result">
-                      <h4>Encryption Result:</h4>
-                      <div className="result-details">
-                        <div><strong>Type:</strong> {encryptedResult.type}</div>
-                        <div><strong>Contract:</strong> {encryptedResult.contractAddress}</div>
-                        <div><strong>Encrypted Value:</strong> {encryptedResult.encryptedValue}</div>
-                        <div><strong>Timestamp:</strong> {encryptedResult.timestamp}</div>
+            {activeTab === 'transactions' && (
+              <div className="tab-content">
+                <div className="left-column">
+                  {/* Send Transaction */}
+                  <div className="card">
+                    <h3 className="card-title">📤 Send Transaction</h3>
+                    {!isCorrectNetwork && (
+                      <div className="network-warning">
+                        ⚠️ Warning: You are not connected to Seismic network. Please switch to Seismic before sending transactions.
                       </div>
+                    )}
+                    <div className="form-section">
+                      <div className="form-group">
+                        <label>Recipient Address</label>
+                        <div className="input-group">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="0x... (Enter the recipient's Ethereum address)"
+                            value={recipientAddress}
+                            onChange={(e) => setRecipientAddress(e.target.value)}
+                            disabled={!isCorrectNetwork}
+                          />
+                          <button 
+                            className="btn btn-outline-info btn-sm input-helper"
+                            onClick={() => {
+                              const testAddress = '0x742d35Cc6634C0532925a3b8D0C9e67b6d7d4b4b';
+                              setRecipientAddress(testAddress);
+                            }}
+                            disabled={!isCorrectNetwork}
+                            title="Use test address for demo"
+                          >
+                            🧪 Test Address
+                          </button>
+                        </div>
+                        <small className="form-text">Tip: Use the test address button for demo transactions</small>
+                      </div>
+                      <div className="form-group">
+                        <label>Amount (SETH)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          placeholder="0.0 (Amount to send in SETH)"
+                          step="0.001"
+                          value={amount}
+                          onChange={(e) => setAmount(e.target.value)}
+                          disabled={!isCorrectNetwork}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <div className="form-check">
+                          <input
+                            type="checkbox"
+                            className="form-check-input"
+                            checked={enableEncryption}
+                            onChange={(e) => setEnableEncryption(e.target.checked)}
+                            disabled={!isCorrectNetwork}
+                          />
+                          <label className="form-check-label">
+                            Enable Seismic Encryption
+                          </label>
+                          <small className="form-text">Use Seismic's privacy features for this transaction</small>
+                        </div>
+                      </div>
+                      <button 
+                        className="btn btn-primary btn-block"
+                        onClick={handleSendTransaction}
+                        disabled={loading || !provider || !isCorrectNetwork}
+                      >
+                        {loading ? 'Sending...' : '📤 Send Transaction on Seismic'}
+                      </button>
                     </div>
-                  )}
-                </div>
-              </div>
-            </div>
+                  </div>
 
-            <div className="right-column">
-              {/* Transaction History */}
-              <div className="card transaction-card">
-                <div className="card-header">
-                  <h3 className="card-title">🕘 Transaction History</h3>
-                  {transactions.length > 0 && (
-                    <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
-                      🗑 Clear
-                    </button>
-                  )}
-                </div>
-                <div className="transaction-history">
-                  {transactions.length === 0 ? (
-                    <div className="empty-state">
-                      <div className="empty-icon">ℹ️</div>
-                      <p>No transactions yet. Send your first transaction to see it here.</p>
-                    </div>
-                  ) : (
-                    <div className="transaction-list">
-                      {transactions.map((tx, index) => (
-                        <div key={index} className="transaction-item">
-                          <div className="transaction-header">
-                            <span className="transaction-type">
-                              {tx.encrypted ? '🔐' : '💸'} 
-                              <a 
-                                href={`${SEISMIC_LINKS.explorer}/tx/${tx.hash}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="transaction-hash-link"
-                                title="View on Seismic Explorer"
-                              >
-                                {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
-                              </a>
-                              {tx.encryptedType && <span className="encrypted-badge">{tx.encryptedType}</span>}
-                            </span>
-                            <span className={`transaction-status status-${tx.status}`}>
-                              {tx.status === 'pending' && '⏳ Pending'}
-                              {tx.status === 'success' && '✅ Success'}
-                              {tx.status === 'failed' && '❌ Failed'}
-                            </span>
-                          </div>
-                          <div className="transaction-details">
-                            <small>To: {tx.to?.slice(0, 10)}...</small>
-                            <small>Amount: {tx.value} SETH</small>
-                            <small>{tx.timestamp}</small>
-                            {tx.blockNumber && <small>Block: {tx.blockNumber}</small>}
+                  {/* Encrypted Types Demo */}
+                  <div className="card">
+                    <h3 className="card-title">🔐 Encrypted Types Demo</h3>
+                    {!isCorrectNetwork && (
+                      <div className="network-warning">
+                        ⚠️ Warning: Encrypted transactions only work on Seismic network. Please switch to Seismic.
+                      </div>
+                    )}
+                    <div className="form-section">
+                      <div className="form-group">
+                        <label>Select Encrypted Type</label>
+                        <select
+                          className="form-control encrypted-type-select"
+                          value={selectedEncryptedType}
+                          onChange={(e) => setSelectedEncryptedType(e.target.value)}
+                          disabled={!isCorrectNetwork}
+                        >
+                          <option value="">Choose type...</option>
+                          {encryptedTypes.map((type) => (
+                            <option key={type.value} value={type.value}>
+                              {type.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label>Contract Address</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="0x... (contract address for encrypted transaction)"
+                          value={contractAddress}
+                          onChange={(e) => setContractAddress(e.target.value)}
+                          disabled={!isCorrectNetwork}
+                        />
+                      </div>
+                      <div className="encrypted-actions">
+                        <button 
+                          className="btn btn-info"
+                          onClick={handleEncryptData}
+                          disabled={loading || !selectedEncryptedType || !contractAddress || !isCorrectNetwork}
+                        >
+                          🔒 Encrypt Data
+                        </button>
+                        <button 
+                          className="btn btn-success"
+                          onClick={handleSendEncryptedTransaction}
+                          disabled={loading || !encryptedResult || !provider || !isCorrectNetwork}
+                        >
+                          🚀 Send Encrypted Transaction
+                        </button>
+                      </div>
+                      {encryptedResult && (
+                        <div className="encrypted-result">
+                          <h4>Encryption Result:</h4>
+                          <div className="result-details">
+                            <div><strong>Type:</strong> {encryptedResult.type}</div>
+                            <div><strong>Contract:</strong> {encryptedResult.contractAddress}</div>
+                            <div><strong>Encrypted Value:</strong> {encryptedResult.encryptedValue}</div>
+                            <div><strong>Timestamp:</strong> {encryptedResult.timestamp}</div>
                           </div>
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
+                  </div>
+                </div>
+
+                <div className="right-column">
+                  {/* Transaction History */}
+                  <div className="card transaction-card">
+                    <div className="card-header">
+                      <h3 className="card-title">🕘 Transaction History</h3>
+                      {transactions.length > 0 && (
+                        <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
+                          🗑 Clear
+                        </button>
+                      )}
+                    </div>
+                    <div className="transaction-history">
+                      {transactions.length === 0 ? (
+                        <div className="empty-state">
+                          <div className="empty-icon">ℹ️</div>
+                          <p>No transactions yet. Send your first transaction to see it here.</p>
+                        </div>
+                      ) : (
+                        <div className="transaction-list">
+                          {transactions.map((tx, index) => (
+                            <div key={index} className="transaction-item">
+                              <div className="transaction-header">
+                                <span className="transaction-type">
+                                  {tx.encrypted ? '🔐' : '💸'} 
+                                  <a 
+                                    href={`${SEISMIC_LINKS.explorer}/tx/${tx.hash}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="transaction-hash-link"
+                                    title="View on Seismic Explorer"
+                                  >
+                                    {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                                  </a>
+                                  {tx.encryptedType && <span className="encrypted-badge">{tx.encryptedType}</span>}
+                                </span>
+                                <span className={`transaction-status status-${tx.status}`}>
+                                  {tx.status === 'pending' && '⏳ Pending'}
+                                  {tx.status === 'success' && '✅ Success'}
+                                  {tx.status === 'failed' && '❌ Failed'}
+                                </span>
+                              </div>
+                              <div className="transaction-details">
+                                <small>To: {tx.to?.slice(0, 10)}...</small>
+                                <small>Amount: {tx.value} SETH</small>
+                                <small>{tx.timestamp}</small>
+                                {tx.blockNumber && <small>Block: {tx.blockNumber}</small>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         )}
       </main>

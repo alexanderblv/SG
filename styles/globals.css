@@ -1328,4 +1328,116 @@ body {
   .notification-time {
     font-size: 10px;
   }
+}
+
+/* Tab System */
+.tabs-navigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #e0e6ed;
+  padding-bottom: 0;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  padding: 1rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6c757d;
+  cursor: pointer;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+  position: relative;
+  margin-bottom: -2px;
+  border-bottom: 2px solid transparent;
+}
+
+.tab-button:hover {
+  background: #f8f9fa;
+  color: #495057;
+}
+
+.tab-button.active {
+  color: #2c3e50;
+  background: white;
+  border-bottom: 2px solid #007bff;
+  font-weight: 600;
+}
+
+.tab-button.active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  top: -1px;
+  height: 1px;
+  background: #dee2e6;
+}
+
+.tab-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  height: 100%;
+}
+
+.tab-content .left-column,
+.tab-content .right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.quick-actions .btn {
+  justify-content: center;
+  text-align: center;
+}
+
+/* Additional styles for better tab experience */
+.text-success {
+  color: #10B981 !important;
+}
+
+.text-danger {
+  color: #EF4444 !important;
+}
+
+/* Mobile responsiveness for tabs */
+@media (max-width: 768px) {
+  .tabs-navigation {
+    flex-direction: column;
+    gap: 0;
+    border-bottom: none;
+  }
+  
+  .tab-button {
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    border-bottom: none;
+    background: #f8f9fa;
+  }
+  
+  .tab-button.active {
+    background: #007bff;
+    color: white;
+    border-bottom: none;
+  }
+  
+  .tab-button.active::before {
+    display: none;
+  }
+  
+  .tab-content {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 } 
