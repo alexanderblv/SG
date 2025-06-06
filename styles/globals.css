@@ -562,8 +562,8 @@ body {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  height: 100%; /* Change from fixed 600px to 100% to match left column height */
-  max-height: none; /* Remove fixed maximum height constraint */
+  height: 100%; /* Take full height of right column */
+  max-height: 100%; /* Don't exceed right column height */
   align-self: stretch; /* Stretch to match the height of the left column */
 }
 
@@ -571,9 +571,9 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  height: auto; /* Change from fixed 480px to auto */
-  max-height: none; /* Remove fixed maximum height constraint */
-  overflow-y: auto; /* Enable scrolling */
+  height: 0; /* Force flex item to use flex-grow */
+  min-height: 0; /* Allow shrinking */
+  overflow-y: auto; /* Enable scrolling when content overflows */
   overflow-x: hidden; /* Hide horizontal scrollbar */
 }
 
@@ -583,11 +583,11 @@ body {
   flex-direction: column;
   gap: 0.75rem;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: visible; /* Let parent handle overflow */
   overflow-x: hidden;
   padding-right: 8px; /* Add padding for scrollbar */
   height: 100%; /* Take full height of parent */
-  max-height: 100%; /* Don't exceed parent height */
+  min-height: 0; /* Allow shrinking */
 }
 
 /* Make empty state fill available space too */
@@ -738,15 +738,19 @@ body {
     min-height: auto;
   }
   
+  .tab-content {
+    min-height: 500px; /* Smaller minimum height for tablet */
+  }
+  
   .transaction-card {
-    height: auto; /* Change from fixed height to auto for tablet */
-    max-height: none; /* Remove fixed maximum height constraint for tablet */
+    height: 100%; /* Keep full height behavior */
+    max-height: 100%; /* Don't exceed parent height */
   }
   
   .transaction-card .transaction-history {
-    height: auto; /* Change from fixed height to auto for tablet */
-    max-height: none; /* Remove fixed maximum height constraint for tablet */
-    overflow-y: auto; /* Enable scrolling */
+    height: 0; /* Force flex behavior */
+    min-height: 0; /* Allow shrinking */
+    overflow-y: auto; /* Enable scrolling when content overflows */
     overflow-x: hidden; /* Hide horizontal scrollbar */
   }
   
@@ -797,16 +801,20 @@ body {
     margin: 1rem;
   }
   
+  .tab-content {
+    min-height: 400px; /* Smaller minimum height for mobile */
+  }
+  
   /* Mobile transaction card styles */
   .transaction-card {
-    height: auto; /* Change from fixed height to auto for mobile */
-    max-height: none; /* Remove fixed maximum height constraint for mobile */
+    height: 100%; /* Keep full height behavior for mobile */
+    max-height: 100%; /* Don't exceed parent height for mobile */
   }
   
   .transaction-card .transaction-history {
-    height: auto; /* Change from fixed height to auto for mobile */
-    max-height: none; /* Remove fixed maximum height constraint for mobile */
-    overflow-y: auto; /* Enable scrolling */
+    height: 0; /* Force flex behavior for mobile */
+    min-height: 0; /* Allow shrinking for mobile */
+    overflow-y: auto; /* Enable scrolling when content overflows */
     overflow-x: hidden; /* Hide horizontal scrollbar */
   }
   
@@ -1100,8 +1108,8 @@ body {
   }
   
   .welcome-card {
-    padding: 2rem 1.5rem;
-    margin: 0 1rem;
+    padding: 2rem;
+    margin: 1rem;
   }
 }
 
@@ -1553,8 +1561,9 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  min-height: 400px;
+  min-height: 600px; /* Set minimum height for consistent layout */
   align-items: stretch; /* Ensure columns stretch to match height */
+  grid-template-rows: 1fr; /* Ensure both columns have the same height */
 }
 
 .tab-content .left-column,
