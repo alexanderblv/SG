@@ -443,23 +443,90 @@ body {
 .encrypted-result h4 {
   color: #2c3e50;
   font-size: 1rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .result-details {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
-.result-details div {
+.result-section {
+  background: #ffffff;
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.result-section h5 {
+  color: #2c3e50;
   font-size: 0.9rem;
-  color: #495057;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
-.result-details strong {
+.result-section div {
+  font-size: 0.85rem;
+  color: #495057;
+  margin-bottom: 0.3rem;
+}
+
+.result-section div:last-child {
+  margin-bottom: 0;
+}
+
+.result-section strong {
   color: #2c3e50;
   margin-right: 0.5rem;
+  font-weight: 500;
+}
+
+/* Type-safe styling */
+.type-badge {
+  background: #007bff;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.encrypted-value {
+  background: #e9ecef;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.validation-status {
+  color: #28a745;
+  font-weight: 500;
+  background: #d4edda;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Validation error styling */
+.text-danger {
+  color: #dc3545 !important;
+}
+
+.form-text.text-danger {
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
 }
 
 /* Transaction History */
