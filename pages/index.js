@@ -967,9 +967,11 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 </div>
               )}
             </div>
-            <span className={`connection-status ${authenticated ? 'connected' : 'disconnected'}`}>
-              {authenticated ? 'Connected' : 'Disconnected'}
-            </span>
+            {authenticated && (
+              <span className={`connection-status ${authenticated ? 'connected' : 'disconnected'}`}>
+                {authenticated ? 'Connected' : 'Disconnected'}
+              </span>
+            )}
             {authenticated ? (
               <button className="btn btn-primary" onClick={logout}>
                 Disconnect
