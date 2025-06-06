@@ -124,10 +124,10 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  align-items: stretch;
-  min-height: calc(100vh - 200px);
-  grid-template-rows: 1fr;
-  height: 100%;
+  align-items: start;
+  min-height: auto;
+  grid-template-rows: auto;
+  height: auto;
 }
 
 .content-container {
@@ -135,7 +135,7 @@ body {
   width: 100%;
   display: flex;
   flex-direction: column;
-  min-height: calc(100vh - 200px);
+  min-height: auto;
 }
 
 .left-column,
@@ -588,9 +588,9 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 400px; /* Restore minimum height */
-  max-height: calc(100vh - 300px); /* Restore reasonable max height */
-  overflow-y: auto;
+  min-height: auto; /* Use natural height instead of forced 300px */
+  max-height: none; /* Remove max-height constraint */
+  overflow-y: visible; /* Allow natural scrolling behavior */
   overflow-x: hidden;
   padding: 0;
   margin: 0;
@@ -620,7 +620,7 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  min-height: 400px;
+  min-height: auto; /* Use natural height instead of forced 200px */
   margin: 0;
 }
 
@@ -760,25 +760,25 @@ body {
   }
   
   .tab-content {
-    min-height: 500px;
+    min-height: auto;
     grid-template-columns: 1fr;
   }
   
   .transaction-card {
     height: auto;
-    min-height: 400px;
+    min-height: auto; /* Use natural height instead of forced 400px */
     max-height: none;
   }
   
   .transaction-card .transaction-history {
-    min-height: 300px;
-    max-height: 500px;
-    overflow-y: auto;
+    min-height: auto; /* Use natural height instead of forced 300px */
+    max-height: none; /* Remove max-height constraint */
+    overflow-y: visible; /* Allow natural scrolling behavior */
     overflow-x: hidden;
   }
   
   .empty-state {
-    min-height: 200px;
+    min-height: auto; /* Use natural height instead of forced 200px */
   }
 }
 
@@ -825,26 +825,26 @@ body {
   }
   
   .tab-content {
-    min-height: 400px;
+    min-height: auto;
     grid-template-columns: 1fr;
   }
   
   /* Mobile transaction card styles */
   .transaction-card {
     height: auto;
-    min-height: 350px;
+    min-height: auto; /* Use natural height instead of forced 350px */
     max-height: none;
   }
   
   .transaction-card .transaction-history {
-    min-height: 250px;
-    max-height: 400px;
-    overflow-y: auto;
+    min-height: auto; /* Use natural height instead of forced 250px */
+    max-height: none; /* Remove max-height constraint */
+    overflow-y: visible; /* Allow natural scrolling behavior */
     overflow-x: hidden;
   }
   
   .empty-state {
-    min-height: 150px;
+    min-height: auto; /* Use natural height instead of forced 150px */
   }
 }
 
@@ -1586,10 +1586,10 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
-  min-height: calc(100vh - 250px);
-  height: 100%;
-  align-items: stretch;
-  grid-template-rows: 1fr;
+  min-height: auto;
+  height: auto;
+  align-items: start;
+  grid-template-rows: auto;
 }
 
 .tab-content .left-column,
@@ -1597,9 +1597,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  height: 100%;
-  min-height: 100%;
-  align-self: stretch;
+  height: auto;
+  min-height: auto;
+  align-self: start;
 }
 
 /* Quick Actions */
@@ -1924,7 +1924,7 @@ body {
 .transaction-status-section {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .btn-info-small {
@@ -2234,42 +2234,5 @@ body {
   
   .transaction-status-section {
     gap: 0.25rem;
-  }
-}
-
-/* Force equal height columns on desktop */
-@media (min-width: 1201px) {
-  .content-grid {
-    align-items: stretch;
-    min-height: calc(100vh - 200px);
-  }
-  
-  .left-column,
-  .right-column {
-    height: 100%;
-    min-height: calc(100vh - 200px);
-  }
-  
-  .tab-content {
-    align-items: stretch;
-    min-height: calc(100vh - 250px);
-  }
-  
-  .tab-content .left-column,
-  .tab-content .right-column {
-    height: 100%;
-    min-height: calc(100vh - 250px);
-  }
-  
-  .transaction-card {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .transaction-card .transaction-history {
-    flex: 1;
-    min-height: 400px;
   }
 } 
