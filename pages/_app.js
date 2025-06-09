@@ -30,7 +30,6 @@ const privyConfig = {
     accentColor: '#6A6FF5',
     theme: 'light',
     showWalletLoginFirst: true,
-    logo: 'https://docs.privy.io/img/logo.svg',
     walletChainType: 'ethereum-only',
   },
   loginMethods: ['wallet', 'email'],

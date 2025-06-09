@@ -1959,7 +1959,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-info">
-            <p>&copy; 2024 Seismic Experience by <strong>alexanderblv</strong></p>
+            <p>&copy; 2025 Seismic Experience by <strong>alexanderblv</strong></p>
           </div>
           <div className="footer-links">
             <a 
@@ -1968,7 +1968,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
               rel="noopener noreferrer"
               className="footer-link"
             >
-              📁 GitHub Repository
+              GitHub Repository
             </a>
             <a 
               href="https://x.com/alexanderblv" 
@@ -1976,7 +1976,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
               rel="noopener noreferrer"
               className="footer-link"
             >
-              🐦 Follow on X
+              Follow on X
             </a>
           </div>
         </div>
