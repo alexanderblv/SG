@@ -87,7 +87,7 @@ export default function Home() {
   const [amount, setAmount] = useState('');
   const [enableEncryption, setEnableEncryption] = useState(false);
 
-  // Encrypted Types Demo
+  // Encrypted Types
   const [selectedEncryptedType, setSelectedEncryptedType] = useState('');
   const [contractAddress, setContractAddress] = useState('');
   const [encryptedResult, setEncryptedResult] = useState(null);
@@ -1081,6 +1081,15 @@ Block Explorer: https://explorer-2.seismicdev.net/
               <p>Connect your wallet to start sending transactions on the Seismic blockchain network.</p>
               
               <div className="welcome-info">
+                <div className="security-warning-box">
+                  <h4>🔒 Wallet Security Notice</h4>
+                  <div className="security-content">
+                    <p><strong>Recommended:</strong> Use MetaMask for the best experience</p>
+                    <p><strong>⚠️ Warning:</strong> Be careful with Rabby wallet - only use from official sources (rabby.io). 
+                    If you see authorization dialogs with suspicious proxy servers, close immediately and use MetaMask instead.</p>
+                  </div>
+                </div>
+                
                 <div className="network-info-box">
                   <h4>Seismic Network Details</h4>
                   <div className="network-details">
@@ -1409,9 +1418,9 @@ Block Explorer: https://explorer-2.seismicdev.net/
                     </div>
                   </div>
 
-                  {/* Encrypted Types Demo */}
+                  {/* Encrypted Types */}
                   <div className="card">
-                    <h3 className="card-title">Encrypted Types Demo</h3>
+                    <h3 className="card-title">Encrypted Types</h3>
                     <div className="form-section">
                       <div className="form-group">
                         <label>Select Encrypted Type</label>
@@ -1430,11 +1439,11 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         </select>
                       </div>
                       <div className="form-group">
-                        <label>Contract Address</label>
+                        <label>Address</label>
                         <input
                           type="text"
                           className="form-control"
-                          placeholder="0x... (Enter contract address or leave empty to use your wallet)"
+                          placeholder="0x... (Enter address or leave empty to use your wallet)"
                           value={contractAddress}
                           onChange={(e) => setContractAddress(e.target.value)}
                           disabled={!isCorrectNetwork}
@@ -1623,11 +1632,11 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         </small>
                       </div>
                       <div className="form-group">
-                        <label>Contract Address (Optional)</label>
+                        <label>Address</label>
                         <input
                           type="text"
                           className="form-control"
-                          placeholder="0x... (Enter contract address or leave empty to use your wallet)"
+                          placeholder="0x... (Enter address or leave empty to use your wallet)"
                           value={messageContractAddress}
                           onChange={(e) => setMessageContractAddress(e.target.value)}
                           disabled={!isCorrectNetwork}
