@@ -48,7 +48,22 @@ const saveTransactionsToStorage = (transactions) => {
 const loadTransactionsFromStorage = () => {
   try {
     const stored = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
+    if (!stored) return [];
+    
+    const transactions = JSON.parse(stored);
+    
+    // Добавляем поле source для обратной совместимости со старыми транзакциями
+    return transactions.map(tx => {
+      if (!tx.source) {
+        // Определяем source на основе типа транзакции
+        if (tx.encryptedType === 'message') {
+          return { ...tx, source: 'messages' };
+        } else {
+          return { ...tx, source: 'transactions' };
+        }
+      }
+      return tx;
+    });
   } catch (error) {
     console.error('Error loading transactions from localStorage:', error);
     return [];
@@ -530,7 +545,8 @@ export default function Home() {
         encryptionType: enableEncryption ? 'Seismic TDX Encryption' : 'None',
         network: 'Seismic',
         gasUsed: transaction.gasLimit || 'auto',
-        dataSize: enableEncryption ? `${transaction.data.length} bytes` : '0 bytes'
+        dataSize: enableEncryption ? `${transaction.data.length} bytes` : '0 bytes',
+        source: 'transactions'  // Маркировка источника - страница транзакций
       };
       
       setTransactions(prev => [newTx, ...prev]);
@@ -768,7 +784,8 @@ export default function Home() {
         status: 'pending',
         encrypted: true,
         encryptedType: selectedEncryptedType,
-        network: 'Seismic'
+        network: 'Seismic',
+        source: 'transactions'  // Маркировка источника - страница транзакций
       };
       
       setTransactions(prev => [newTx, ...prev]);
@@ -794,6 +811,18 @@ export default function Home() {
   const clearHistory = () => {
     setTransactions([]);
     addNotification('Transaction history cleared successfully', 'success');
+  };
+
+  // Очистка истории транзакций (только со страницы транзакций)
+  const clearTransactionHistory = () => {
+    setTransactions(prev => prev.filter(tx => tx.source !== 'transactions'));
+    addNotification('Transaction history cleared successfully', 'success');
+  };
+
+  // Очистка истории сообщений (только со страницы сообщений)
+  const clearMessageHistory = () => {
+    setTransactions(prev => prev.filter(tx => !(tx.encryptedType === 'message' && tx.source === 'messages')));
+    addNotification('Message history cleared successfully', 'success');
   };
 
   // Transaction Info Modal Functions
@@ -885,7 +914,8 @@ export default function Home() {
         encrypted: true,
         encryptedType: 'message',
         messagePreview: encryptedMessage.originalMessage.substring(0, 50) + (encryptedMessage.originalMessage.length > 50 ? '...' : ''),
-        network: 'Seismic'
+        network: 'Seismic',
+        source: 'messages'  // Маркировка источника - страница сообщений
       };
       
       setTransactions(prev => [newTx, ...prev]);
@@ -1499,21 +1529,21 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   <div className="card transaction-card">
                     <div className="card-header">
                       <h3 className="card-title">Transaction History</h3>
-                      {transactions.length > 0 && (
-                        <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
+                      {transactions.filter(tx => tx.source === 'transactions').length > 0 && (
+                        <button className="btn btn-outline-danger btn-sm" onClick={clearTransactionHistory}>
                           Clear
                         </button>
                       )}
                     </div>
                     <div className="transaction-history">
-                      {transactions.length === 0 ? (
+                      {transactions.filter(tx => tx.source === 'transactions').length === 0 ? (
                         <div className="empty-state">
                           <div className="empty-icon">i</div>
                           <p>No transactions yet. Send your first transaction to see it here.</p>
                         </div>
                       ) : (
                         <div className="transaction-list">
-                          {transactions.map((tx, index) => (
+                          {transactions.filter(tx => tx.source === 'transactions').map((tx, index) => (
                             <div key={index} className="transaction-item">
                               <div className="transaction-header">
                                 <span className="transaction-type">
@@ -1702,14 +1732,14 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   <div className="card transaction-card">
                     <div className="card-header">
                       <h3 className="card-title">Message History</h3>
-                      {transactions.filter(tx => tx.encryptedType === 'message').length > 0 && (
-                        <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
+                      {transactions.filter(tx => tx.encryptedType === 'message' && tx.source === 'messages').length > 0 && (
+                        <button className="btn btn-outline-danger btn-sm" onClick={clearMessageHistory}>
                           Clear
                         </button>
                       )}
                     </div>
                     <div className="transaction-history">
-                      {transactions.filter(tx => tx.encryptedType === 'message').length === 0 ? (
+                      {transactions.filter(tx => tx.encryptedType === 'message' && tx.source === 'messages').length === 0 ? (
                         <div className="empty-state">
                           <div className="empty-icon">i</div>
                           <p>No encrypted messages yet. Send your first encrypted message to see it here.</p>
@@ -1717,7 +1747,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                       ) : (
                         <div className="transaction-list">
                           {transactions
-                            .filter(tx => tx.encryptedType === 'message')
+                            .filter(tx => tx.encryptedType === 'message' && tx.source === 'messages')
                             .map((tx, index) => (
                             <div key={index} className="transaction-item message-item">
                               <div className="transaction-header">
