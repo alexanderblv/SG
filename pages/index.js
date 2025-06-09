@@ -1501,7 +1501,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                       <h3 className="card-title">Transaction History</h3>
                       {transactions.length > 0 && (
                         <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
-                          🗑 Clear
+                          Clear
                         </button>
                       )}
                     </div>
@@ -1603,7 +1603,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           disabled={!isCorrectNetwork}
                         />
                         <small className="form-text">
-                          💡 Leave empty to send to your own wallet
+                          Leave empty to send to your own wallet
                         </small>
                       </div>
                       <div className="message-actions">
@@ -1704,7 +1704,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                       <h3 className="card-title">Message History</h3>
                       {transactions.filter(tx => tx.encryptedType === 'message').length > 0 && (
                         <button className="btn btn-outline-danger btn-sm" onClick={clearHistory}>
-                          🗑 Clear
+                          Clear
                         </button>
                       )}
                     </div>
@@ -1722,7 +1722,6 @@ Block Explorer: https://explorer-2.seismicdev.net/
                             <div key={index} className="transaction-item message-item">
                               <div className="transaction-header">
                                 <span className="transaction-type">
-                                  💬 
                                   <a 
                                     href={`${SEISMIC_LINKS.explorer}/tx/${tx.hash}`}
                                     target="_blank"
