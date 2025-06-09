@@ -1114,254 +1114,258 @@ Block Explorer: https://explorer-2.seismicdev.net/
 
             {/* Tab Content */}
             {activeTab === 'wallet' && (
-              <div className="tab-content wallet-tab-content">
-                {/* Wallet Information */}
-                <div className="card wallet-info-card">
-                  <h3 className="card-title">Wallet Information</h3>
-                  <div className="info-section">
-                    <div className="info-item">
-                      <label>Wallet Status</label>
-                      <div className={`info-value ${authenticated ? 'text-success' : 'text-danger'}`}>
-                        {authenticated ? '🟢 Connected' : '🔴 Disconnected'}
-                        <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
-                          {authenticated ? 'Wallet is connected and ready' : 'Please connect your wallet'}
-                        </small>
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <label>Your Address</label>
-                      <div className="info-value address-display">
-                        {user?.wallet?.address || 'Connect wallet to see address'}
-                        {user?.wallet?.address && (
-                          <button className="copy-btn" onClick={() => navigator.clipboard.writeText(user?.wallet?.address)}>
-                            Copy
-                          </button>
+              <div className="tab-content wallet-tab-content-new">
+                <div className="left-column">
+                  {/* Seismic Network Resources */}
+                  <div className="card seismic-info-card">
+                    <h3 className="card-title">Seismic Network Resources</h3>
+                    <div className="seismic-resources">
+                      <div className="resource-section">
+                        <div className="network-status-detailed">
+                          <div className="status-row">
+                            <span className="status-label">Network:</span>
+                            <span className={`status-value ${
+                              !authenticated 
+                                ? 'disconnected'
+                                : isCorrectNetwork 
+                                  ? 'connected' 
+                                  : 'disconnected'
+                            }`}>
+                              {!authenticated 
+                                ? 'Wallet Disconnected'
+                                : isCorrectNetwork 
+                                  ? 'Connected to Seismic'
+                                  : 'Wrong Network'
+                              }
+                            </span>
+                          </div>
+                          <div className="status-row">
+                            <span className="status-label">Chain ID:</span>
+                            <span className="status-value">{SEISMIC_NETWORK.id}</span>
+                          </div>
+                          <div className="status-row">
+                            <span className="status-label">Currency:</span>
+                            <span className="status-value">{SEISMIC_NETWORK.nativeCurrency.symbol}</span>
+                          </div>
+                        </div>
+                        
+                        {balance === '0.0' && isCorrectNetwork && (
+                          <div className="low-balance-warning">
+                            <strong>Need test tokens?</strong> Get free SETH from the faucet below!
+                          </div>
                         )}
-                      </div>
-                      {user?.wallet?.address && (
-                        <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
-                          Your unique blockchain identifier
-                        </small>
-                      )}
-                    </div>
-                    <div className="info-item">
-                      <label>Balance (SETH)</label>
-                      <div className="info-value balance-display">
-                        {balance}
-                        {user?.wallet?.address && (
-                          <button className="refresh-btn" onClick={() => updateBalance(user.wallet.address)}>
-                            Refresh
-                          </button>
-                        )}
-                      </div>
-                      <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
-                        {parseFloat(balance) === 0 
-                          ? 'Get test tokens from the faucet' 
-                          : 'Available for transactions'
-                        }
-                      </small>
-                    </div>
-                    {authenticated && (
-                      <div className="info-item">
-                        <label>Wallet Type</label>
-                        <div className="info-value">
-                          {user?.wallet?.walletClientType || 'Unknown'}
-                          <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
-                            Connected wallet provider
-                          </small>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Seismic Network Resources */}
-                <div className="card seismic-info-card">
-                  <h3 className="card-title">Seismic Network Resources</h3>
-                  <div className="seismic-resources">
-                    <div className="resource-section">
-                      <div className="network-status-detailed">
-                        <div className="status-row">
-                          <span className="status-label">Network:</span>
-                          <span className={`status-value ${
-                            !authenticated 
-                              ? 'disconnected'
-                              : isCorrectNetwork 
-                                ? 'connected' 
-                                : 'disconnected'
-                          }`}>
-                            {!authenticated 
-                              ? 'Wallet Disconnected'
-                              : isCorrectNetwork 
-                                ? 'Connected to Seismic'
-                                : 'Wrong Network'
-                            }
-                          </span>
-                        </div>
-                        <div className="status-row">
-                          <span className="status-label">Chain ID:</span>
-                          <span className="status-value">{SEISMIC_NETWORK.id}</span>
-                        </div>
-                        <div className="status-row">
-                          <span className="status-label">Currency:</span>
-                          <span className="status-value">{SEISMIC_NETWORK.nativeCurrency.symbol}</span>
-                        </div>
-                      </div>
-                      
-                      {balance === '0.0' && isCorrectNetwork && (
-                        <div className="low-balance-warning">
-                          <strong>Need test tokens?</strong> Get free SETH from the faucet below!
-                        </div>
-                      )}
-                      
-                      <div className="resource-links">
-                        <a 
-                          href={SEISMIC_LINKS.faucet} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="btn btn-success btn-sm resource-btn"
-                        >
-                          Get Test Tokens (Faucet)
-                        </a>
-                        <a 
-                          href={SEISMIC_LINKS.explorer} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="btn btn-info btn-sm resource-btn"
-                        >
-                          Block Explorer
-                        </a>
-                        <a 
-                          href={SEISMIC_LINKS.docs} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="btn btn-outline-primary btn-sm resource-btn"
-                        >
-                          Documentation
-                        </a>
-                        <a 
-                          href={SEISMIC_LINKS.devnet} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="btn btn-outline-secondary btn-sm resource-btn"
-                        >
-                          Devnet Guide
-                        </a>
-                      </div>
-                      
-                      {!isCorrectNetwork && (
-                        <div className="network-action">
-                          <button 
-                            className="btn btn-warning btn-block"
-                            onClick={() => switchToSeismic(false)}
-                            disabled={loading}
+                        
+                        <div className="resource-links">
+                          <a 
+                            href={SEISMIC_LINKS.faucet} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-success btn-sm resource-btn"
                           >
-                            {loading ? 'Switching to Seismic...' : 'Switch to Seismic Network'}
-                          </button>
+                            Get Test Tokens (Faucet)
+                          </a>
+                          <a 
+                            href={SEISMIC_LINKS.explorer} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-info btn-sm resource-btn"
+                          >
+                            Block Explorer
+                          </a>
+                          <a 
+                            href={SEISMIC_LINKS.docs} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-primary btn-sm resource-btn"
+                          >
+                            Documentation
+                          </a>
+                          <a 
+                            href={SEISMIC_LINKS.devnet} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="btn btn-outline-secondary btn-sm resource-btn"
+                          >
+                            Devnet Guide
+                          </a>
                         </div>
-                      )}
+                        
+                        {!isCorrectNetwork && (
+                          <div className="network-action">
+                            <button 
+                              className="btn btn-warning btn-block"
+                              onClick={() => switchToSeismic(false)}
+                              disabled={loading}
+                            >
+                              {loading ? 'Switching to Seismic...' : 'Switch to Seismic Network'}
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Extended Network Information */}
-                <div className="card network-info-extended">
-                  <h3 className="card-title">Network Information</h3>
-                  <div className="info-section">
-                    <div className="info-item">
-                      <label>Current Network</label>
-                      <div className="info-value">
-                        {!authenticated 
-                          ? 'Wallet Disconnected'
-                          : currentNetwork?.name || 'Unknown'
-                        }
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <label>Chain ID</label>
-                      <div className="info-value">
-                        {!authenticated 
-                          ? 'N/A'
-                          : currentNetwork?.chainId || 'Unknown'
-                        }
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <label>Network Type</label>
-                      <div className="info-value">
-                        Testnet (Devnet)
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <label>RPC Endpoint</label>
-                      <div className="info-value">
-                        {SEISMIC_NETWORK.rpcUrls?.default?.http?.[0] || 'N/A'}
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <label>Native Currency</label>
-                      <div className="info-value">
-                        {`${SEISMIC_NETWORK.nativeCurrency.symbol} (${SEISMIC_NETWORK.nativeCurrency.name})`}
-                        <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
-                          Decimals: {SEISMIC_NETWORK.nativeCurrency.decimals}
-                        </small>
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <label>Block Explorer</label>
-                      <div className="info-value">
-                        <a 
-                          href={SEISMIC_NETWORK.blockExplorers?.default?.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="explorer-link"
-                        >
-                          {SEISMIC_NETWORK.blockExplorers?.default?.name || 'View Explorer'}
-                        </a>
-                        <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
-                          Track transactions and blocks
-                        </small>
-                      </div>
-                    </div>
-                    <div className="info-item">
-                      <label>Network Status</label>
-                      <div className={`info-value ${
-                        !authenticated 
-                          ? ''
-                          : isCorrectNetwork 
-                            ? 'text-success' 
-                            : 'text-danger'
-                      }`}>
-                        {!authenticated 
-                          ? '🔌 Wallet Disconnected'
-                          : isCorrectNetwork 
-                            ? '✅ Connected to Seismic Network'
-                            : '❌ Wrong Network - Please Switch'
-                        }
-                      </div>
-                    </div>
-                    {!isCorrectNetwork && authenticated && (
+                <div className="right-column">
+                  {/* Wallet Information */}
+                  <div className="card wallet-info-card">
+                    <h3 className="card-title">Wallet Information</h3>
+                    <div className="info-section">
                       <div className="info-item">
-                        <label>Required Network</label>
-                        <div className="info-value text-warning">
-                          {SEISMIC_NETWORK.name} (Chain ID: {SEISMIC_NETWORK.id})
-                          <small style={{display: 'block', color: '#e67e22', marginTop: '0.25rem'}}>
-                            Switch your wallet to this network
+                        <label>Wallet Status</label>
+                        <div className={`info-value ${authenticated ? 'text-success' : 'text-danger'}`}>
+                          {authenticated ? '🟢 Connected' : '🔴 Disconnected'}
+                          <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
+                            {authenticated ? 'Wallet is connected and ready' : 'Please connect your wallet'}
                           </small>
                         </div>
                       </div>
-                    )}
-                    {authenticated && isCorrectNetwork && (
                       <div className="info-item">
-                        <label>Connection Quality</label>
-                        <div className="info-value text-success">
-                          🟢 Excellent
-                          <small style={{display: 'block', color: '#27ae60', marginTop: '0.25rem'}}>
-                            Ready for transactions
+                        <label>Your Address</label>
+                        <div className="info-value address-display">
+                          {user?.wallet?.address || 'Connect wallet to see address'}
+                          {user?.wallet?.address && (
+                            <button className="copy-btn" onClick={() => navigator.clipboard.writeText(user?.wallet?.address)}>
+                              Copy
+                            </button>
+                          )}
+                        </div>
+                        {user?.wallet?.address && (
+                          <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
+                            Your unique blockchain identifier
+                          </small>
+                        )}
+                      </div>
+                      <div className="info-item">
+                        <label>Balance (SETH)</label>
+                        <div className="info-value balance-display">
+                          {balance}
+                          {user?.wallet?.address && (
+                            <button className="refresh-btn" onClick={() => updateBalance(user.wallet.address)}>
+                              Refresh
+                            </button>
+                          )}
+                        </div>
+                        <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
+                          {parseFloat(balance) === 0 
+                            ? 'Get test tokens from the faucet' 
+                            : 'Available for transactions'
+                          }
+                        </small>
+                      </div>
+                      {authenticated && (
+                        <div className="info-item">
+                          <label>Wallet Type</label>
+                          <div className="info-value">
+                            {user?.wallet?.walletClientType || 'Unknown'}
+                            <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
+                              Connected wallet provider
+                            </small>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Extended Network Information */}
+                  <div className="card network-info-extended">
+                    <h3 className="card-title">Network Information</h3>
+                    <div className="info-section">
+                      <div className="info-item">
+                        <label>Current Network</label>
+                        <div className="info-value">
+                          {!authenticated 
+                            ? 'Wallet Disconnected'
+                            : currentNetwork?.name || 'Unknown'
+                          }
+                        </div>
+                      </div>
+                      <div className="info-item">
+                        <label>Chain ID</label>
+                        <div className="info-value">
+                          {!authenticated 
+                            ? 'N/A'
+                            : currentNetwork?.chainId || 'Unknown'
+                          }
+                        </div>
+                      </div>
+                      <div className="info-item">
+                        <label>Network Type</label>
+                        <div className="info-value">
+                          Testnet (Devnet)
+                        </div>
+                      </div>
+                      <div className="info-item">
+                        <label>RPC Endpoint</label>
+                        <div className="info-value">
+                          {SEISMIC_NETWORK.rpcUrls?.default?.http?.[0] || 'N/A'}
+                        </div>
+                      </div>
+                      <div className="info-item">
+                        <label>Native Currency</label>
+                        <div className="info-value">
+                          {`${SEISMIC_NETWORK.nativeCurrency.symbol} (${SEISMIC_NETWORK.nativeCurrency.name})`}
+                          <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
+                            Decimals: {SEISMIC_NETWORK.nativeCurrency.decimals}
                           </small>
                         </div>
                       </div>
-                    )}
+                      <div className="info-item">
+                        <label>Block Explorer</label>
+                        <div className="info-value">
+                          <a 
+                            href={SEISMIC_NETWORK.blockExplorers?.default?.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="explorer-link"
+                          >
+                            {SEISMIC_NETWORK.blockExplorers?.default?.name || 'View Explorer'}
+                          </a>
+                          <small style={{display: 'block', color: '#6c757d', marginTop: '0.25rem'}}>
+                            Track transactions and blocks
+                          </small>
+                        </div>
+                      </div>
+                      <div className="info-item">
+                        <label>Network Status</label>
+                        <div className={`info-value ${
+                          !authenticated 
+                            ? ''
+                            : isCorrectNetwork 
+                              ? 'text-success' 
+                              : 'text-danger'
+                        }`}>
+                          {!authenticated 
+                            ? '🔌 Wallet Disconnected'
+                            : isCorrectNetwork 
+                              ? '✅ Connected to Seismic Network'
+                              : '❌ Wrong Network - Please Switch'
+                          }
+                        </div>
+                      </div>
+                      {!isCorrectNetwork && authenticated && (
+                        <div className="info-item">
+                          <label>Required Network</label>
+                          <div className="info-value text-warning">
+                            {SEISMIC_NETWORK.name} (Chain ID: {SEISMIC_NETWORK.id})
+                            <small style={{display: 'block', color: '#e67e22', marginTop: '0.25rem'}}>
+                              Switch your wallet to this network
+                            </small>
+                          </div>
+                        </div>
+                      )}
+                      {authenticated && isCorrectNetwork && (
+                        <div className="info-item">
+                          <label>Connection Quality</label>
+                          <div className="info-value text-success">
+                            🟢 Excellent
+                            <small style={{display: 'block', color: '#27ae60', marginTop: '0.25rem'}}>
+                              Ready for transactions
+                            </small>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
