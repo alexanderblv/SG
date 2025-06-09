@@ -1581,7 +1581,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                         <label>Message to Encrypt</label>
                         <textarea
                           className="form-control"
-                          rows="14"
+                          rows="15"
                           placeholder="Enter your secret message here... 
 (e.g., 'This is my private message that will be encrypted using Seismic TDX secure enclaves')"
                           value={messageToEncrypt}
