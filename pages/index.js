@@ -112,6 +112,9 @@ export default function Home() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
 
+  // Demo mode
+  const [isDemoMode, setIsDemoMode] = useState(false);
+
   // Add notification function
   const addNotification = (message, type = 'info') => {
     const id = Date.now();
@@ -176,6 +179,17 @@ export default function Home() {
     }, autoCloseTime);
     
     setNotificationTimers(prev => new Map(prev).set(id, timer));
+  };
+
+  // Demo mode functions
+  const loginDemo = () => {
+    setIsDemoMode(true);
+    addNotification('Demo mode activated! All features work exactly the same, but in demonstration mode.', 'info');
+  };
+
+  const logoutDemo = () => {
+    setIsDemoMode(false);
+    addNotification('Demo mode deactivated.', 'info');
   };
 
   const encryptedTypes = [
@@ -421,8 +435,52 @@ export default function Home() {
   };
 
   const handleSendTransaction = async () => {
-    if (!provider || !amount) {
+    if ((!provider && !isDemoMode) || !amount) {
       addNotification('Please fill in amount and connect wallet', 'warning');
+      return;
+    }
+
+    // Demo mode simulation
+    if (isDemoMode) {
+      setLoading(true);
+      
+      try {
+        const targetRecipient = recipientAddress.trim() || '0x1234567890123456789012345678901234567890';
+        
+        // Simulate transaction processing delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const demoTxHash = `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+        
+        const newTx = {
+          hash: demoTxHash,
+          to: targetRecipient,
+          value: amount,
+          timestamp: new Date().toLocaleString(),
+          status: 'success',
+          encrypted: enableEncryption,
+          encryptionType: enableEncryption ? 'Seismic TDX Encryption (Demo)' : 'None (Demo)',
+          network: 'Seismic (Demo)',
+          gasUsed: 'Demo',
+          dataSize: enableEncryption ? '256 bytes (Demo)' : '0 bytes (Demo)',
+          source: 'transactions'
+        };
+        
+        setTransactions(prev => [newTx, ...prev]);
+        
+        const encryptionStatus = enableEncryption ? 'ENCRYPTED' : 'TRANSPARENT';
+        addNotification(`Demo: ${encryptionStatus} transaction simulated successfully! Hash: ${demoTxHash}`, 'success');
+        
+        // Clear form
+        setRecipientAddress('');
+        setAmount('');
+        setEnableEncryption(false);
+        
+      } catch (error) {
+        addNotification('Demo: Transaction simulation failed', 'error');
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
@@ -709,7 +767,7 @@ export default function Home() {
     setValidationError('');
 
     // Используем адрес контракта пользователя или адрес текущего кошелька
-    const targetContract = contractAddress.trim() || user?.wallet?.address;
+    const targetContract = contractAddress.trim() || (isDemoMode ? '0x1234567890123456789012345678901234567890' : user?.wallet?.address);
 
     try {
       setLoading(true);
@@ -726,13 +784,14 @@ export default function Home() {
         // Simulate encrypted value using TDX secure enclaves
         encryptedValue: `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
         timestamp: new Date().toLocaleString(),
-        network: 'Seismic',
-        encryption: 'TDX Secure Enclave'
+        network: isDemoMode ? 'Seismic (Demo)' : 'Seismic',
+        encryption: isDemoMode ? 'TDX Secure Enclave (Demo)' : 'TDX Secure Enclave'
       };
       
       setEncryptedResult(encryptedData);
-      const targetInfo = targetContract === user?.wallet?.address ? ' (to your own wallet)' : '';
-      addNotification(`${selectedEncryptedType} value "${encryptedInputValue}" encrypted successfully on Seismic${targetInfo}!`, 'success');
+      const targetInfo = targetContract === (isDemoMode ? '0x1234567890123456789012345678901234567890' : user?.wallet?.address) ? ' (to your own wallet)' : '';
+      const demoPrefix = isDemoMode ? 'Demo: ' : '';
+      addNotification(`${demoPrefix}${selectedEncryptedType} value "${encryptedInputValue}" encrypted successfully on Seismic${targetInfo}!`, 'success');
       
     } catch (error) {
       console.error('Encryption error:', error);
@@ -743,8 +802,52 @@ export default function Home() {
   };
 
   const handleSendEncryptedTransaction = async () => {
-    if (!provider || !selectedEncryptedType) {
+    if ((!provider && !isDemoMode) || !selectedEncryptedType) {
       addNotification('Please complete encryption first and connect wallet', 'warning');
+      return;
+    }
+
+    // Demo mode simulation for encrypted transactions
+    if (isDemoMode) {
+      setLoading(true);
+      
+      try {
+        const targetContract = contractAddress.trim() || '0x1234567890123456789012345678901234567890';
+        
+        // Simulate transaction processing delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const demoTxHash = `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+        
+        const newTx = {
+          hash: demoTxHash,
+          to: targetContract,
+          value: '0.001',
+          timestamp: new Date().toLocaleString(),
+          status: 'success',
+          encrypted: true,
+          encryptedType: selectedEncryptedType + ' (Demo)',
+          network: 'Seismic (Demo)',
+          source: 'transactions'
+        };
+        
+        setTransactions(prev => [newTx, ...prev]);
+        
+        const contractInfo = targetContract === '0x1234567890123456789012345678901234567890' ? ' (to your own wallet)' : '';
+        addNotification(`Demo: Encrypted transaction simulated successfully on Seismic${contractInfo}! Hash: ${demoTxHash}, Type: ${selectedEncryptedType}`, 'success');
+        
+        // Clear form
+        setSelectedEncryptedType('');
+        setContractAddress('');
+        setEncryptedResult(null);
+        setEncryptedInputValue('');
+        setValidationError('');
+        
+      } catch (error) {
+        addNotification('Demo: Encrypted transaction simulation failed', 'error');
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
@@ -854,13 +957,14 @@ export default function Home() {
         messageBytes: Array.from(messageBytes),
         encryptedData: `0x${Array.from({length: 128}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`,
         timestamp: new Date().toLocaleString(),
-        network: 'Seismic',
-        encryption: 'TDX Secure Enclave',
-        method: 'CSTORE (Encrypted Storage)'
+        network: isDemoMode ? 'Seismic (Demo)' : 'Seismic',
+        encryption: isDemoMode ? 'TDX Secure Enclave (Demo)' : 'TDX Secure Enclave',
+        method: isDemoMode ? 'CSTORE (Encrypted Storage) (Demo)' : 'CSTORE (Encrypted Storage)'
       };
       
       setEncryptedMessage(mockEncryptedMessage);
-      addNotification(`Message encrypted successfully using Seismic TDX encryption!`, 'success');
+      const demoPrefix = isDemoMode ? 'Demo: ' : '';
+      addNotification(`${demoPrefix}Message encrypted successfully using Seismic TDX encryption!`, 'success');
       
     } catch (error) {
       console.error('Message encryption error:', error);
@@ -872,8 +976,51 @@ export default function Home() {
 
   // Функция для отправки зашифрованного сообщения в блокчейн
   const handleSendEncryptedMessage = async () => {
-    if (!provider || !encryptedMessage) {
+    if ((!provider && !isDemoMode) || !encryptedMessage) {
       addNotification('Please encrypt a message first', 'warning');
+      return;
+    }
+
+    // Demo mode simulation for encrypted messages
+    if (isDemoMode) {
+      setLoading(true);
+      
+      try {
+        const targetAddress = messageContractAddress.trim() || '0x1234567890123456789012345678901234567890';
+        
+        // Simulate transaction processing delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        const demoTxHash = `0x${Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+        
+        const newTx = {
+          hash: demoTxHash,
+          to: targetAddress,
+          value: '0.001',
+          timestamp: new Date().toLocaleString(),
+          status: 'success',
+          encrypted: true,
+          encryptedType: 'message (Demo)',
+          messagePreview: encryptedMessage.originalMessage.substring(0, 50) + (encryptedMessage.originalMessage.length > 50 ? '...' : ''),
+          network: 'Seismic (Demo)',
+          source: 'messages'
+        };
+        
+        setTransactions(prev => [newTx, ...prev]);
+        
+        const addressInfo = targetAddress === '0x1234567890123456789012345678901234567890' ? ' (to your own wallet)' : '';
+        addNotification(`Demo: Encrypted message simulated successfully on Seismic${addressInfo}! Hash: ${demoTxHash}`, 'success');
+        
+        // Clear form
+        setMessageToEncrypt('');
+        setMessageContractAddress('');
+        setEncryptedMessage(null);
+        
+      } catch (error) {
+        addNotification('Demo: Encrypted message simulation failed', 'error');
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
@@ -889,7 +1036,7 @@ export default function Home() {
       const signer = await provider.getSigner();
       
       // Используем адрес контракта пользователя или адрес текущего кошелька
-      const targetAddress = messageContractAddress.trim() || user?.wallet?.address;
+      const targetAddress = messageContractAddress.trim() || (isDemoMode ? '0x1234567890123456789012345678901234567890' : user?.wallet?.address);
       
       if (!targetAddress) {
         addNotification('Unable to determine target address. Please connect wallet or enter contract address.', 'error');
@@ -1019,14 +1166,14 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 </div>
               )}
             </div>
-            {authenticated && (
-              <span className={`connection-status ${authenticated ? 'connected' : 'disconnected'}`}>
-                {authenticated ? 'Connected' : 'Disconnected'}
+            {(authenticated || isDemoMode) && (
+              <span className={`connection-status ${(authenticated || isDemoMode) ? 'connected' : 'disconnected'}`}>
+                {isDemoMode ? 'Demo Mode' : (authenticated ? 'Connected' : 'Disconnected')}
               </span>
             )}
-            {authenticated ? (
-              <button className="btn btn-primary" onClick={logout}>
-                Disconnect
+            {(authenticated || isDemoMode) ? (
+              <button className="btn btn-primary" onClick={isDemoMode ? logoutDemo : logout}>
+                {isDemoMode ? 'Exit Demo' : 'Disconnect'}
               </button>
             ) : (
               <button className="btn btn-primary" onClick={login}>
@@ -1074,22 +1221,13 @@ Block Explorer: https://explorer-2.seismicdev.net/
       )}
 
       <main className="main-content">
-        {!authenticated ? (
+        {!authenticated && !isDemoMode ? (
           <div className="welcome-section">
             <div className="welcome-card">
               <h2>Welcome to Seismic Experience by alexanderblv</h2>
               <p>Connect your wallet to start sending transactions on the Seismic blockchain network.</p>
               
               <div className="welcome-info">
-                <div className="security-warning-box">
-                  <h4>🔒 Wallet Security Notice</h4>
-                  <div className="security-content">
-                    <p><strong>Recommended:</strong> Use MetaMask for the best experience</p>
-                    <p><strong>⚠️ Warning:</strong> Be careful with Rabby wallet - only use from official sources (rabby.io). 
-                    If you see authorization dialogs with suspicious proxy servers, close immediately and use MetaMask instead.</p>
-                  </div>
-                </div>
-                
                 <div className="network-info-box">
                   <h4>Seismic Network Details</h4>
                   <div className="network-details">
@@ -1115,9 +1253,30 @@ Block Explorer: https://explorer-2.seismicdev.net/
                 </div>
               </div>
               
-              <button className="btn btn-primary btn-large" onClick={login}>
-                Connect Wallet
-              </button>
+              <div className="wallet-connection-section">
+                <div className="wallet-buttons-container">
+                  <button className="btn btn-primary btn-large" onClick={login}>
+                    Connect Wallet
+                  </button>
+                  <button className="btn btn-secondary btn-large" onClick={loginDemo}>
+                    Connect Wallet (DEMO)
+                  </button>
+                </div>
+                
+                <div className="connection-modes-info">
+                  <div className="mode-description">
+                    <h4>Connection Modes</h4>
+                    <div className="modes-comparison">
+                      <div className="mode-item">
+                        <strong>Connect Wallet:</strong> Real blockchain interactions with your actual wallet. Requires MetaMask or compatible wallet and SETH tokens for gas fees.
+                      </div>
+                      <div className="mode-item">
+                        <strong>Connect Wallet (DEMO):</strong> Demonstration mode that works exactly the same as the real mode, but simulates all operations without requiring an actual wallet connection or gas fees.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               
               <div className="welcome-note">
                 <small>
@@ -1160,19 +1319,22 @@ Block Explorer: https://explorer-2.seismicdev.net/
                   <div className="info-section">
                     <div className="info-item">
                       <label>Connection Status</label>
-                      <div className={`info-value status-indicator ${authenticated ? 'status-connected' : 'status-disconnected'}`}>
+                      <div className={`info-value status-indicator ${(authenticated || isDemoMode) ? 'status-connected' : 'status-disconnected'}`}>
                         <span className="status-dot"></span>
-                        {authenticated ? 'Connected' : 'Disconnected'}
+                        {isDemoMode ? 'Demo Mode' : (authenticated ? 'Connected' : 'Disconnected')}
                       </div>
                     </div>
                     <div className="info-item">
                       <label>Wallet Address</label>
                       <div className="info-value address-display">
                         <span className="address-text">
-                          {user?.wallet?.address || 'Not connected'}
+                          {isDemoMode 
+                            ? '0x1234567890123456789012345678901234567890' 
+                            : (user?.wallet?.address || 'Not connected')
+                          }
                         </span>
-                        {user?.wallet?.address && (
-                          <button className="action-btn copy-btn" onClick={() => navigator.clipboard.writeText(user?.wallet?.address)}>
+                        {(user?.wallet?.address || isDemoMode) && (
+                          <button className="action-btn copy-btn" onClick={() => navigator.clipboard.writeText(isDemoMode ? '0x1234567890123456789012345678901234567890' : user?.wallet?.address)}>
                             Copy
                           </button>
                         )}
@@ -1181,19 +1343,28 @@ Block Explorer: https://explorer-2.seismicdev.net/
                     <div className="info-item">
                       <label>SETH Balance</label>
                       <div className="info-value balance-display">
-                        <span className="balance-amount">{balance}</span>
-                        {user?.wallet?.address && (
-                          <button className="action-btn refresh-btn" onClick={() => updateBalance(user.wallet.address)}>
+                        <span className="balance-amount">{isDemoMode ? '1000.0' : balance}</span>
+                        {(user?.wallet?.address || isDemoMode) && (
+                          <button 
+                            className="action-btn refresh-btn" 
+                            onClick={() => {
+                              if (isDemoMode) {
+                                addNotification('Demo mode: Balance refreshed (simulated)', 'info');
+                              } else {
+                                updateBalance(user.wallet.address);
+                              }
+                            }}
+                          >
                             Refresh
                           </button>
                         )}
                       </div>
                     </div>
-                    {authenticated && (
+                    {(authenticated || isDemoMode) && (
                       <div className="info-item">
                         <label>Provider</label>
                         <div className="info-value">
-                          {user?.wallet?.walletClientType || 'Unknown'}
+                          {isDemoMode ? 'Demo Provider' : (user?.wallet?.walletClientType || 'Unknown')}
                         </div>
                       </div>
                     )}
@@ -1207,18 +1378,20 @@ Block Explorer: https://explorer-2.seismicdev.net/
                     <div className="info-item">
                       <label>Network Status</label>
                       <div className={`info-value status-indicator ${
-                        !authenticated 
+                        (!authenticated && !isDemoMode)
                           ? 'status-disconnected'
-                          : isCorrectNetwork 
+                          : (isDemoMode || isCorrectNetwork)
                             ? 'status-connected' 
                             : 'status-warning'
                       }`}>
                         <span className="status-dot"></span>
-                        {!authenticated 
+                        {(!authenticated && !isDemoMode)
                           ? 'Not Connected'
-                          : isCorrectNetwork 
-                            ? 'Seismic Network'
-                            : 'Wrong Network'
+                          : isDemoMode
+                            ? 'Seismic Network (Demo)'
+                            : isCorrectNetwork 
+                              ? 'Seismic Network'
+                              : 'Wrong Network'
                         }
                       </div>
                     </div>
@@ -1236,7 +1409,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                       </div>
                     </div>
                     
-                    {balance === '0.0' && isCorrectNetwork && (
+                    {balance === '0.0' && isCorrectNetwork && !isDemoMode && (
                       <div className="info-item">
                         <label>Balance Warning</label>
                         <div className="info-value text-warning">
@@ -1245,7 +1418,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
                       </div>
                     )}
                     
-                    {!isCorrectNetwork && authenticated && (
+                    {!isCorrectNetwork && authenticated && !isDemoMode && (
                       <div className="info-item">
                         <label>Action Required</label>
                         <div className="info-value">
