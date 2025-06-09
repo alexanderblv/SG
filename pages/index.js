@@ -1669,28 +1669,28 @@ Block Explorer: https://explorer-2.seismicdev.net/
                           onClick={() => setMessageToEncrypt('This is a confidential business message encrypted on Seismic blockchain.')}
                           disabled={!isCorrectNetwork}
                         >
-                          💼 Business Message
+                          Business Message
                         </button>
                         <button 
                           className="btn btn-outline-secondary btn-sm template-btn"
                           onClick={() => setMessageToEncrypt('Personal private note stored securely using TDX encryption on Seismic.')}
                           disabled={!isCorrectNetwork}
                         >
-                          📝 Personal Note
+                          Personal Note
                         </button>
                         <button 
                           className="btn btn-outline-secondary btn-sm template-btn"
                           onClick={() => setMessageToEncrypt('Secret voting choice: Option A. This vote is encrypted and anonymous.')}
                           disabled={!isCorrectNetwork}
                         >
-                          🗳️ Private Vote
+                          Private Vote
                         </button>
                         <button 
                           className="btn btn-outline-secondary btn-sm template-btn"
                           onClick={() => setMessageToEncrypt('API Key: sk_test_123abc. Stored securely with hardware-level encryption.')}
                           disabled={!isCorrectNetwork}
                         >
-                          🔑 Secure Data
+                          Secure Data
                         </button>
                       </div>
                     </div>

@@ -1769,6 +1769,8 @@ body {
   line-height: 1.3;
   border: 1px solid #dee2e6;
   background: white;
+  color: #495057;
+  font-weight: 500;
   transition: all 0.2s ease;
 }
 
