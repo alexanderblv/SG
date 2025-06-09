@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seismic Game - Wallet Connection</title>
+    <meta name="description" content="Seismic Game - Modern blockchain application with Privy wallet integration">
+    
+    <!-- Preconnect for better performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Fallback Privy loading -->
+    <script>
+        function loadPrivyFallback() {
+            console.log('Primary Privy CDN failed, trying fallback...');
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/@privy-io/react-auth@2.13.0/dist/index.umd.js';
+            script.crossOrigin = 'anonymous';
+            script.onerror = function() {
+                console.error('All Privy CDN sources failed');
+                document.getElementById('root').innerHTML = `
+                    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+                        <h2 style="color: #dc3545;">Library Loading Error</h2>
+                        <p>Failed to load Privy SDK from CDN. Please check your internet connection and try again.</p>
+                        <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            🔄 Reload
+                        </button>
+                    </div>
+                `;
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+    
+    <!-- React and ReactDOM from CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Privy React Auth SDK - Updated URL -->
+    <script crossorigin src="https://cdn.jsdelivr.net/npm/@privy-io/react-auth@latest/dist/index.umd.js" onerror="loadPrivyFallback()"></script>
+    
+    <!-- Ethers.js -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6.7.1/dist/ethers.umd.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useCallback } = React;
+        
+        // Wait for Privy to load
+        const initializeApp = () => {
+            // Check if Privy is available
+            if (!window.PrivyReactAuth) {
+                console.error('Privy SDK not loaded. Retrying...');
+                setTimeout(initializeApp, 1000);
+                return;
+            }
+
+            try {
+                // Accessing Privy from global scope
+                const { PrivyProvider, usePrivy, useWallets } = window.PrivyReactAuth;
+
+                // Privy App Configuration
+                const PRIVY_APP_ID = 'cmbhhu8sr00mojr0l66siei2z';
+
+                // Seismic Network Configuration
+                const seismicNetwork = {
+                    id: 5124,
+                    name: 'Seismic Devnet',
+                    network: 'seismic-devnet',
+                    nativeCurrency: {
+                        decimals: 18,
+                        name: 'Seismic ETH',
+                        symbol: 'SETH',
+                    },
+                    rpcUrls: {
+                        public: { http: ['https://node-2.seismicdev.net/rpc'] },
+                        default: { http: ['https://node-2.seismicdev.net/rpc'] },
+                    },
+                    blockExplorers: {
+                        default: { 
+                            name: 'Seismic Explorer', 
+                            url: 'https://explorer-2.seismicdev.net/' 
+                        },
+                    },
+                    testnet: true,
+                };
+
+                // Updated Privy Configuration for v2.x
+                const privyConfig = {
+                    appearance: {
+                        accentColor: '#6A6FF5',
+                        theme: 'light',
+                        showWalletLoginFirst: true,
+                        logo: 'https://docs.privy.io/img/logo.svg',
+                        walletChainType: 'ethereum-only',
+                    },
+                    loginMethods: ['wallet', 'email'],
+                    embeddedWallets: {
+                        createOnLogin: 'users-without-wallets',
+                        requireUserPasswordOnCreate: false,
+                        showWalletUIs: true,
+                    },
+                    defaultChain: seismicNetwork,
+                    supportedChains: [seismicNetwork],
+                    // External wallets configuration
+                    externalWallets: {
+                        metamask: true,
+                        coinbaseWallet: true,
+                        walletConnect: true,
+                        rainbow: true,
+                    },
+                };
+
+                // User Info Component
+                const UserInfo = ({ user, balance, networkInfo }) => (
+                    <div className="card fade-in">
+                        <h3 className="card-title">👤 User Information</h3>
+                        <div className="info-section">
+                            <div className="info-item">
+                                <label>Email</label>
+                                <div className="info-value">{user?.email?.address || 'Not specified'}</div>
+                            </div>
+                            <div className="info-item">
+                                <label>Wallet Address</label>
+                                <div className="info-value">
+                                    {user?.wallet?.address ? 
+                                        `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}` : 
+                                        'Not connected'
+                                    }
+                                </div>
+                            </div>
+                            <div className="info-item">
+                                <label>Balance</label>
+                                <div className="info-value">{balance} SETH</div>
+                            </div>
+                            <div className="info-item">
+                                <label>Network</label>
+                                <div className="info-value status-connected">{networkInfo?.name || 'Seismic Devnet'}</div>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+                // Transaction Form Component
+                const TransactionForm = ({ onSendTransaction, loading, isConnected }) => {
+                    const [recipientAddress, setRecipientAddress] = useState('');
+                    const [amount, setAmount] = useState('');
+                    const [enableEncryption, setEnableEncryption] = useState(false);
+
+                    const handleSubmit = () => {
+                        if (!recipientAddress || !amount) {
+                            alert('Please fill in recipient address and amount');
+                            return;
+                        }
+                        onSendTransaction(recipientAddress, amount, enableEncryption);
+                        setRecipientAddress('');
+                        setAmount('');
+                        setEnableEncryption(false);
+                    };
+
+                    return (
+                        <div className="card">
+                            <h3 className="card-title">📤 Send Transaction</h3>
+                            <div className="form-section">
+                                <div className="form-group">
+                                    <label>Recipient Address</label>
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="0x..."
+                                        value={recipientAddress}
+                                        onChange={(e) => setRecipientAddress(e.target.value)}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>Amount (SETH)</label>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        placeholder="0.0"
+                                        step="0.001"
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <div className="form-check">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={enableEncryption}
+                                            onChange={(e) => setEnableEncryption(e.target.checked)}
+                                        />
+                                        <label className="form-check-label">
+                                            ✅ Enable Seismic Encryption
+                                        </label>
+                                    </div>
+                                </div>
+                                <button 
+                                    className="btn btn-primary btn-block"
+                                    onClick={handleSubmit}
+                                    disabled={loading || !isConnected}
+                                >
+                                    {loading ? 'Sending...' : '📤 Send Transaction'}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                };
+
+                // Transaction History Component
+                const TransactionHistory = ({ transactions, onClear }) => (
+                    <div className="card">
+                        <div className="card-header">
+                            <h3 className="card-title">📋 Transaction History</h3>
+                            {transactions.length > 0 && (
+                                <button className="btn btn-outline-danger btn-sm" onClick={onClear}>
+                                    🗑 Clear
+                                </button>
+                            )}
+                        </div>
+                        <div className="transaction-history">
+                            {transactions.length === 0 ? (
+                                <div className="empty-state">
+                                    <div className="empty-icon">i</div>
+                                    <p>No transactions yet. Send your first transaction to see it here.</p>
+                                </div>
+                            ) : (
+                                <div className="transaction-list">
+                                    {transactions.map((tx, index) => (
+                                        <div key={index} className="transaction-item">
+                                            <div className="transaction-header">
+                                                <span className="transaction-type">
+                                                    {tx.encrypted ? '🔐' : '💸'} 
+                                                    {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                                                </span>
+                                                <span className={`transaction-status status-${tx.status}`}>
+                                                    {tx.status}
+                                                </span>
+                                            </div>
+                                            <div className="transaction-details">
+                                                <small>To: {tx.to?.slice(0, 10)}...</small>
+                                                <small>Amount: {tx.value} SETH</small>
+                                                <small>{tx.timestamp}</small>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+
+                // Main App Component
+                const SeismicApp = () => {
+                    const { ready, authenticated, user, login, logout } = usePrivy();
+                    const { wallets } = useWallets();
+                    
+                    const [loading, setLoading] = useState(false);
+                    const [balance, setBalance] = useState('0.0');
+                    const [networkInfo, setNetworkInfo] = useState(null);
+                    const [transactions, setTransactions] = useState([]);
+                    const [provider, setProvider] = useState(null);
+
+                    // Initialize wallet provider when wallet is connected
+                    useEffect(() => {
+                        if (authenticated && wallets.length > 0) {
+                            const initializeWallet = async () => {
+                                try {
+                                    // Get Ethereum provider (updated for Privy v2.x)
+                                    const ethereumProvider = await wallets[0].getEthereumProvider();
+                                    const ethersProvider = new ethers.BrowserProvider(ethereumProvider);
+                                    setProvider(ethersProvider);
+                                    
+                                    if (user?.wallet?.address) {
+                                        updateBalance(user.wallet.address, ethersProvider);
+                                    }
+                                } catch (error) {
+                                    console.error('Error initializing wallet:', error);
+                                }
+                            };
+                            
+                            initializeWallet();
+                        }
+                    }, [authenticated, wallets, user]);
+
+                    const updateBalance = async (address, walletProvider) => {
+                        try {
+                            const ethersProvider = walletProvider || provider;
+                            if (ethersProvider) {
+                                const balance = await ethersProvider.getBalance(address);
+                                const balanceInEth = ethers.formatEther(balance);
+                                setBalance(parseFloat(balanceInEth).toFixed(4));
+                            }
+                        } catch (error) {
+                            console.error('Error getting balance:', error);
+                            setBalance('0.0');
+                        }
+                    };
+
+                    const handleSendTransaction = async (to, value, encrypted) => {
+                        if (!provider) {
+                            alert('Wallet not connected');
+                            return;
+                        }
+
+                        try {
+                            setLoading(true);
+                            
+                            const signer = await provider.getSigner();
+                            const transaction = {
+                                to: to,
+                                value: ethers.parseEther(value)
+                            };
+
+                            const txResponse = await signer.sendTransaction(transaction);
+                            
+                            const newTx = {
+                                hash: txResponse.hash,
+                                to: to,
+                                value: value,
+                                timestamp: new Date().toLocaleString(),
+                                status: 'pending',
+                                encrypted: encrypted
+                            };
+                            
+                            setTransactions(prev => [newTx, ...prev]);
+                            
+                            alert(`Transaction sent successfully!\nHash: ${txResponse.hash}`);
+                            
+                            // Wait for confirmation and update status
+                            txResponse.wait().then(() => {
+                                setTransactions(prev => 
+                                    prev.map(tx => 
+                                        tx.hash === txResponse.hash 
+                                            ? { ...tx, status: 'success' }
+                                            : tx
+                                    )
+                                );
+                                // Update balance
+                                if (user?.wallet?.address) {
+                                    updateBalance(user.wallet.address);
+                                }
+                            });
+                            
+                        } catch (error) {
+                            console.error('Transaction error:', error);
+                            alert('Transaction failed: ' + error.message);
+                        } finally {
+                            setLoading(false);
+                        }
+                    };
+
+                    const clearHistory = () => {
+                        setTransactions([]);
+                    };
+
+                    if (!ready) {
+                        return (
+                            <div className="app-container">
+                                <div className="main-content">
+                                    <div className="card text-center">
+                                        <div className="loading" style={{margin: '0 auto'}}></div>
+                                        <p className="mt-2">Loading Seismic Game...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div className="app-container">
+                            {/* Header */}
+                            <header className="header">
+                                <div className="header-content">
+                                    <h1 className="app-title">Seismic Game - Wallet Connection</h1>
+                                    <div className="header-controls">
+                                        <span className="network-status">Seismic Devnet</span>
+                                        <span className={`connection-status ${authenticated ? 'connected' : 'disconnected'}`}>
+                                            {authenticated ? 'Connected' : 'Disconnected'}
+                                        </span>
+                                        {authenticated ? (
+                                            <button className="btn btn-danger btn-sm" onClick={logout}>
+                                                🚪 Logout
+                                            </button>
+                                        ) : (
+                                            <button className="btn btn-primary btn-sm" onClick={login}>
+                                                🔗 Connect Wallet
+                                            </button>
+                                        )}
+                                        <a href="https://faucet-2.seismicdev.net/" target="_blank" className="btn btn-success btn-sm">
+                                            🚰 Get Tokens
+                                        </a>
+                                    </div>
+                                </div>
+                            </header>
+
+                            {/* Main Content */}
+                            <main className="main-content">
+                                {!authenticated ? (
+                                    // Login screen
+                                    <div className="card text-center">
+                                        <h1>Welcome to Seismic Game</h1>
+                                        <p className="mb-3">
+                                            Modern blockchain application with wallet integration 
+                                            and support for encrypted transactions on Seismic Devnet.
+                                        </p>
+                                        <button className="btn btn-primary btn-lg" onClick={login}>
+                                            🚀 Connect Wallet and Start
+                                        </button>
+                                        <div className="mt-3">
+                                            <small>Supports MetaMask, WalletConnect, and email login</small>
+                                        </div>
+                                        <div className="mt-3">
+                                            <p className="text-muted">
+                                                <strong>Privy App ID:</strong> {PRIVY_APP_ID}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // Main interface
+                                    <div className="content-grid">
+                                        <div className="left-column">
+                                            <UserInfo user={user} balance={balance} networkInfo={networkInfo} />
+                                            <TransactionForm 
+                                                onSendTransaction={handleSendTransaction}
+                                                loading={loading}
+                                                isConnected={authenticated}
+                                            />
+                                        </div>
+                                        <div className="right-column">
+                                            <TransactionHistory 
+                                                transactions={transactions}
+                                                onClear={clearHistory}
+                                            />
+                                            
+                                            {/* Network Info */}
+                                            <div className="card">
+                                                <h3 className="card-title">🌐 Network Information</h3>
+                                                <div className="info-section">
+                                                    <div className="info-item">
+                                                        <label>Chain ID</label>
+                                                        <div className="info-value">5124</div>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <label>Network</label>
+                                                        <div className="info-value">Seismic Devnet</div>
+                                                    </div>
+                                                    <div className="info-item">
+                                                        <label>RPC URL</label>
+                                                        <div className="info-value">https://node-2.seismicdev.net/rpc</div>
+                                                    </div>
+                                                </div>
+                                                <div className="text-center mt-3">
+                                                    <a href="https://explorer-2.seismicdev.net/" target="_blank" className="btn btn-secondary btn-sm">
+                                                        🔍 Open Explorer
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </main>
+
+                            {/* Footer */}
+                            <footer className="footer">
+                                <p>&copy; 2024 Seismic Game. Powered by Privy Auth SDK & Seismic Devnet</p>
+                            </footer>
+                        </div>
+                    );
+                };
+
+                // Root App Component with Privy Provider
+                const App = () => (
+                    <PrivyProvider
+                        appId={PRIVY_APP_ID}
+                        config={privyConfig}
+                    >
+                        <SeismicApp />
+                    </PrivyProvider>
+                );
+
+                // Render the application
+                ReactDOM.render(React.createElement(App), document.getElementById('root'));
+                console.log('Seismic Game initialized successfully!');
+
+            } catch (error) {
+                console.error('Application initialization error:', error);
+                document.getElementById('root').innerHTML = `
+                    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+                        <h2 style="color: #dc3545;">Application Error</h2>
+                        <p>An error occurred while starting the application: ${error.message}</p>
+                        <p>Please check that all required libraries are loaded.</p>
+                        <button onclick="location.reload()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                            🔄 Reload
+                        </button>
+                    </div>
+                `;
+            }
+        };
+
+        // Initialize when the page loads
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeApp);
+        } else {
+            initializeApp();
+        }
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
