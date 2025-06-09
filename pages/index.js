@@ -948,8 +948,8 @@ export default function Home() {
     return (
       <div className="container">
         <Head>
-          <title>Seismic Experience - Loading...</title>
-          <meta name="description" content="Loading Seismic Experience..." />
+          <title>Seismic Experience by alexanderblv - Loading...</title>
+          <meta name="description" content="Loading Seismic Experience by alexanderblv..." />
         </Head>
         <div className="loading-screen">
           <div className="loading-spinner"></div>
@@ -962,15 +962,15 @@ export default function Home() {
   return (
     <div className="app-container">
       <Head>
-        <title>Seismic Experience</title>
-        <meta name="description" content="Seismic Experience - Modern blockchain application with encrypted transaction support" />
+        <title>Seismic Experience by alexanderblv</title>
+        <meta name="description" content="Seismic Experience by alexanderblv - Modern blockchain application with encrypted transaction support" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <header className="header">
         <div className="header-content">
-          <h1 className="app-title">Seismic Experience</h1>
+          <h1 className="app-title">Seismic Experience <span className="by-author">by alexanderblv</span></h1>
           <div className="header-controls">
             <div className="network-info">
               <span className={`network-status ${
@@ -1077,7 +1077,7 @@ Block Explorer: https://explorer-2.seismicdev.net/
         {!authenticated ? (
           <div className="welcome-section">
             <div className="welcome-card">
-              <h2>Welcome to Seismic Experience</h2>
+              <h2>Welcome to Seismic Experience by alexanderblv</h2>
               <p>Connect your wallet to start sending transactions on the Seismic blockchain network.</p>
               
               <div className="welcome-info">
@@ -1954,6 +1954,33 @@ Block Explorer: https://explorer-2.seismicdev.net/
           </div>
         </div>
       )}
+      
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-content">
+          <div className="footer-info">
+            <p>&copy; 2024 Seismic Experience by <strong>alexanderblv</strong></p>
+          </div>
+          <div className="footer-links">
+            <a 
+              href="https://github.com/alexanderblv/Seismic-Experience" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              📁 GitHub Repository
+            </a>
+            <a 
+              href="https://x.com/alexanderblv" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              🐦 Follow on X
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 } 

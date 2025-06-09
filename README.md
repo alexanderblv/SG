@@ -1,4 +1,4 @@
-# 🌊 Seismic Experience
+# 🌊 Seismic Experience by alexanderblv
 
 A modern Web3 application for interacting with the **Seismic Blockchain** through **Privy React SDK** with automatic network switching and integrated resources.
 
@@ -380,4 +380,17 @@ contract RealEncryptedVoting {
 - ⏳ **2025**: Seismic devnet for testing
 - 🎯 **2026**: Production-ready encrypted dApps
 
-**Our demo application** is excellent preparation for the future where users can really encrypt data on blockchain! 
+**Our demo application** is excellent preparation for the future where users can really encrypt data on blockchain!
+
+---
+
+## 👨‍💻 Author
+
+**alexanderblv**
+
+- 📁 **GitHub**: [https://github.com/alexanderblv/Seismic-Experience](https://github.com/alexanderblv/Seismic-Experience)
+- 🐦 **X (Twitter)**: [https://x.com/alexanderblv](https://x.com/alexanderblv)
+
+---
+
+*Built with ❤️ for the Seismic blockchain ecosystem* 
