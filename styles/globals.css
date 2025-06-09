@@ -1369,10 +1369,10 @@ body {
   max-width: 100%;
 }
 
-/* Special layout for Wallet & Network tab - 2 columns with balanced heights */
+/* Special layout for Wallet & Network tab - Left narrow, right wide */
 .wallet-tab-content-new {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 2fr;
   gap: 2rem;
   align-items: start;
   width: 100%;
@@ -1433,7 +1433,7 @@ body {
 /* Responsive design for new wallet tab layout */
 @media (max-width: 1200px) {
   .wallet-tab-content-new {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1.5fr;
     gap: 1.5rem;
   }
   
