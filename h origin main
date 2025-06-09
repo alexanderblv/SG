@@ -1,3 +1,0 @@
-[33mbd9deba[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Изменен layout вкладки Wallet & Network: Seismic Resources слева, Wallet и Network Information справа в колонку
-[33ma4777ef[m[33m ([m[1;31morigin/main[m[33m)[m Улучшения вкладки Wallet & Network: удалено Quick Actions, расширена Network Information, изменена сетка на 3 колонки, добавлен responsive дизайн
-[33md06d1a7[m[33m ([m[1;31morigin/ui-layout-improvements[m[33m, [m[1;32mui-layout-improvements[m[33m)[m Refactor UI layout: Move Quick Message Templates to left column
